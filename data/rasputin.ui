@@ -119,7 +119,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="label15">
+                      <object class="GtkLabel" id="label11">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Slow</property>
@@ -144,7 +144,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="label14">
+                      <object class="GtkLabel" id="label12">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Fast</property>
@@ -167,7 +167,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="label24">
+                      <object class="GtkLabel" id="label21">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Short</property>
@@ -193,7 +193,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="label25">
+                      <object class="GtkLabel" id="label22">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Long</property>
@@ -211,7 +211,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox">
+                  <object class="GtkBox" id="left_box">
                     <property name="name">lh_box</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
@@ -320,7 +320,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="label3">
+                      <object class="GtkLabel" id="label42">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Long</property>
@@ -331,7 +331,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="label7">
+                      <object class="GtkLabel" id="label41">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Short</property>
@@ -342,7 +342,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="label8">
+                      <object class="GtkLabel" id="label32">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Long</property>
@@ -353,7 +353,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="label9">
+                      <object class="GtkLabel" id="label31">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Short</property>
@@ -411,7 +411,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <child>
-                      <object class="GtkLabel">
+                      <object class="GtkLabel" id="lbl_beep">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Error Beep:</property>
