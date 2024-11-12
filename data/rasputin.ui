@@ -131,6 +131,7 @@
                     </child>
                     <child>
                       <object class="GtkScale" id="mouse_accel">
+                        <property name="width-request">200</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="tooltip-text" translatable="yes">Set the motion speed of the mouse</property>
@@ -179,6 +180,7 @@
                     </child>
                     <child>
                       <object class="GtkScale" id="mouse_dclick">
+                        <property name="width-request">200</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="tooltip-text" translatable="yes">Set the maximum delay between clicks to generate a double-click</property>
@@ -292,6 +294,7 @@
                     </child>
                     <child>
                       <object class="GtkScale" id="kb_delay">
+                        <property name="width-request">200</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="hexpand">True</property>
@@ -306,6 +309,7 @@
                     </child>
                     <child>
                       <object class="GtkScale" id="kb_interval">
+                        <property name="width-request">200</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="tooltip-text" translatable="yes">Interval between each key repeat</property>
