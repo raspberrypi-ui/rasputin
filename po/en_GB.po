@@ -95,7 +95,7 @@ msgstr "Repeat Interval:"
 
 #: ../data/lxinput.ui.h:16
 msgid "Type in the following box to test your keyboard settings"
-msgstr "Type in the following box to test your keyboard settings"
+msgstr "Type here to test keyboard settings"
 
 #: ../data/lxinput.ui.h:17
 msgid "Character Repeat"

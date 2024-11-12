@@ -238,9 +238,9 @@ static void set_xml_value (const char *lvl1, const char *lvl2, const char *l2att
     if (g_file_test (user_config_file, G_FILE_TEST_IS_REGULAR))
     {
         xDoc = xmlParseFile (user_config_file);
-        if (!xDoc) xDoc = xmlNewDoc ((xmlChar *) "1.0");
+        if (!xDoc) xDoc = xmlNewDoc (XC ("1.0"));
     }
-    else xDoc = xmlNewDoc ((xmlChar *) "1.0");
+    else xDoc = xmlNewDoc (XC ("1.0"));
     xpathCtx = xmlXPathNewContext (xDoc);
 
     // check that the nodes exist in the document - create them if not
@@ -269,7 +269,7 @@ static void set_xml_value (const char *lvl1, const char *lvl2, const char *l2att
         if (xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
         {
             node = xmlNewChild (cur_node, NULL, XC (lvl2), NULL);
-            if (l2attr) xmlSetProp (node, (xmlChar *) l2attr, (xmlChar *) l2atval);
+            if (l2attr) xmlSetProp (node, XC (l2attr), XC (l2atval));
         }
         xmlXPathFreeObject (xpathObj);
         g_free (cptr);
@@ -772,7 +772,7 @@ void read_labwc_values (void)
 
     xmlXPathContextPtr xpathCtx = xmlXPathNewContext (xDoc);
 
-    xpathObj = xmlXPathEvalExpression ((xmlChar *) "/*[local-name()='openbox_config']/*[local-name()='keyboard']/*[local-name()='repeatRate']", xpathCtx);
+    xpathObj = xmlXPathEvalExpression (XC ("/*[local-name()='openbox_config']/*[local-name()='keyboard']/*[local-name()='repeatRate']"), xpathCtx);
     if (xpathObj)
     {
         if (xpathObj->nodesetval)
@@ -784,7 +784,7 @@ void read_labwc_values (void)
     }
     old_interval = interval;
 
-    xpathObj = xmlXPathEvalExpression ((xmlChar *) "/*[local-name()='openbox_config']/*[local-name()='keyboard']/*[local-name()='repeatDelay']", xpathCtx);
+    xpathObj = xmlXPathEvalExpression (XC ("/*[local-name()='openbox_config']/*[local-name()='keyboard']/*[local-name()='repeatDelay']"), xpathCtx);
     if (xpathObj)
     {
         if (xpathObj->nodesetval)
@@ -796,7 +796,7 @@ void read_labwc_values (void)
     }
     old_delay = delay;
 
-    xpathObj = xmlXPathEvalExpression ((xmlChar *) "/*[local-name()='openbox_config']/*[local-name()='libinput']/*[local-name()='device'][@category=\"default\"]/*[local-name()='pointerSpeed']", xpathCtx);
+    xpathObj = xmlXPathEvalExpression (XC ("/*[local-name()='openbox_config']/*[local-name()='libinput']/*[local-name()='device'][@category=\"default\"]/*[local-name()='pointerSpeed']"), xpathCtx);
     if (xpathObj)
     {
         if (xpathObj->nodesetval)
@@ -808,7 +808,7 @@ void read_labwc_values (void)
     }
     old_facc = facc;
 
-    xpathObj = xmlXPathEvalExpression ((xmlChar *) "/*[local-name()='openbox_config']/*[local-name()='libinput']/*[local-name()='device'][@category=\"default\"]/*[local-name()='leftHanded']", xpathCtx);
+    xpathObj = xmlXPathEvalExpression (XC ("/*[local-name()='openbox_config']/*[local-name()='libinput']/*[local-name()='device'][@category=\"default\"]/*[local-name()='leftHanded']"), xpathCtx);
     if (xpathObj)
     {
         if (xpathObj->nodesetval)
