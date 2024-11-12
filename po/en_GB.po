@@ -59,7 +59,7 @@ msgstr "Left handed (Swap left and right mouse buttons)"
 
 #: ../data/lxinput.ui.h:7
 msgid "Delay:"
-msgstr "Delay:"
+msgstr "Double-click:"
 
 #: ../data/lxinput.ui.h:8
 msgid "Double-click"
