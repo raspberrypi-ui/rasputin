@@ -49,11 +49,12 @@
 static GtkWidget *dlg;
 static GtkRange *mouse_accel;
 static GtkRange *mouse_dclick;
-static GtkSwitch* mouse_left_handed;
+static GtkSwitch *mouse_left_handed;
 static GtkRange *kb_delay;
 static GtkRange *kb_interval;
-static GtkToggleButton* kb_beep;
+static GtkSwitch* kb_beep;
 static GtkButton* kb_layout;
+GtkWidget *beep_box;
 
 static int accel = 20, old_accel = 20;
 static int threshold = 10, old_threshold = 10;
@@ -570,10 +571,10 @@ static void on_left_handed_toggle(GtkSwitch* btn, gboolean state, gpointer user_
     set_left_handed_mouse(left_handed);
 }
 
-static void on_kb_beep_toggle(GtkToggleButton* btn, gpointer user_data)
+static void on_kb_beep_toggle(GtkSwitch* btn, gboolean state, gpointer user_data)
 {
     XKeyboardControl values;
-    beep = gtk_toggle_button_get_active(btn);
+    beep = state;
     values.bell_percent = beep ? -1 : 0;
     XChangeKeyboardControl(GDK_DISPLAY_XDISPLAY(gdk_display_get_default()), KBBellPercent, &values);
 }
@@ -875,8 +876,10 @@ int main(int argc, char** argv)
 
     kb_delay = (GtkRange*)gtk_builder_get_object(builder,"kb_delay");
     kb_interval = (GtkRange*)gtk_builder_get_object(builder,"kb_interval");
-    kb_beep = (GtkToggleButton*)gtk_builder_get_object(builder,"beep");
+    kb_beep = (GtkSwitch*)gtk_builder_get_object(builder,"beep");
     kb_layout = (GtkButton*)gtk_builder_get_object(builder,"keyboard_layout");
+
+    beep_box = GTK_WIDGET (gtk_builder_get_object (builder, "beep_box"));
 
     gtk_button_set_label(kb_layout, _("Keyboard Layout..."));
 
@@ -891,7 +894,7 @@ int main(int argc, char** argv)
         mouse_settings = g_settings_new ("org.gnome.desktop.peripherals.mouse");
         keyboard_settings = g_settings_new ("org.gnome.desktop.peripherals.keyboard");
     }
-    else gtk_widget_hide (GTK_WIDGET (kb_beep));
+    else gtk_widget_hide (beep_box);
 
     /* init the UI */
     gtk_range_set_value(mouse_accel, (facc + 1) * 5.0);
@@ -900,15 +903,15 @@ int main(int argc, char** argv)
 
     gtk_range_set_value(kb_delay, delay);
     gtk_range_set_value(kb_interval, interval);
-    gtk_toggle_button_set_active(kb_beep, beep);
+    gtk_switch_set_active(kb_beep, beep);
 
     g_signal_connect(mouse_accel, "button-release-event", G_CALLBACK(on_mouse_accel_changed), NULL);
-    g_signal_connect(mouse_left_handed, "state-set", G_CALLBACK(on_left_handed_toggle), NULL);
     g_signal_connect(mouse_dclick, "button-release-event", G_CALLBACK(on_mouse_dclick_changed), NULL);
+    g_signal_connect(mouse_left_handed, "state-set", G_CALLBACK(on_left_handed_toggle), NULL);
 
     g_signal_connect(kb_delay, "button-release-event", G_CALLBACK(on_kb_range_changed), &delay);
     g_signal_connect(kb_interval, "button-release-event", G_CALLBACK(on_kb_range_changed), &interval);
-    g_signal_connect(kb_beep, "toggled", G_CALLBACK(on_kb_beep_toggle), NULL);
+    g_signal_connect(kb_beep, "state-set", G_CALLBACK(on_kb_beep_toggle), NULL);
     g_signal_connect(kb_layout, "clicked", G_CALLBACK(on_set_keyboard_ext), NULL);
 
     if( gtk_dialog_run( (GtkDialog*)dlg ) == GTK_RESPONSE_OK )

@@ -135,6 +135,7 @@
                       <object class="GtkScale" id="mouse_accel">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
+                        <property name="tooltip-text" translatable="yes">Set the motion speed of the mouse</property>
                         <property name="hexpand">True</property>
                         <property name="adjustment">mouse_accel_adj</property>
                         <property name="value-pos">right</property>
@@ -182,6 +183,7 @@
                       <object class="GtkScale" id="mouse_dclick">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
+                        <property name="tooltip-text" translatable="yes">Set the maximum delay between clicks to generate a double-click</property>
                         <property name="hexpand">True</property>
                         <property name="adjustment">mouse_dclick_adj</property>
                         <property name="digits">0</property>
@@ -212,6 +214,7 @@
                 </child>
                 <child>
                   <object class="GtkBox">
+                    <property name="name">lh_box</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <child>
@@ -406,13 +409,34 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkCheckButton" id="beep">
-                    <property name="label" translatable="yes">Beep when there is an error of keyboard input</property>
-                    <property name="use-action-appearance">False</property>
+                  <object class="GtkBox" id="beep_box">
                     <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">False</property>
-                    <property name="draw-indicator">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Error Beep:</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSwitch" id="beep">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="tooltip-text" translatable="yes">Beep when there is a keyboard input error</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="pack-type">end</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
