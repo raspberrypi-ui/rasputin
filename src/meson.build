@@ -1,5 +1,5 @@
 sources = files (
-    'lxinput.c'
+    'rasputin.c'
 )
 
 add_global_arguments('-Wno-unused-result', language : 'c')
