@@ -48,16 +48,12 @@
 
 static GtkWidget *dlg;
 static GtkRange *mouse_accel;
-static GtkRange *mouse_threshold;
 static GtkRange *mouse_dclick;
 static GtkToggleButton* mouse_left_handed;
 static GtkRange *kb_delay;
 static GtkRange *kb_interval;
 static GtkToggleButton* kb_beep;
 static GtkButton* kb_layout;
-static GtkLabel* kb_layout_label;
-static GtkWidget *keymodel_cb, *keylayout_cb, *keyvar_cb;
-static GtkWidget *msg_dlg;
 
 static int accel = 20, old_accel = 20;
 static int threshold = 10, old_threshold = 10;
@@ -85,7 +81,6 @@ static wm_type wm;
 
 /* Globals accessed from multiple threads */
 
-static char gbuffer[512];
 GThread *pthread;
 
 /* Lists for keyboard setting */
@@ -273,7 +268,7 @@ static void set_xml_value (const char *lvl1, const char *lvl2, const char *l2att
         if (xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
         {
             node = xmlNewChild (cur_node, NULL, XC (lvl2), NULL);
-            if (l2attr) xmlSetProp (node, l2attr, l2atval);
+            if (l2attr) xmlSetProp (node, (xmlChar *) l2attr, (xmlChar *) l2atval);
         }
         xmlXPathFreeObject (xpathObj);
         g_free (cptr);
@@ -325,8 +320,7 @@ static void reload_all_programs (void)
 static void set_dclick_time (void)
 {
     const char *session_name;
-    char *user_config_file, *str, *fname, *scf;
-    char cmdbuf[256];
+    char *user_config_file, *str, *scf;
     GKeyFile *kf;
     gsize len;
 
@@ -425,7 +419,7 @@ static void set_mouse_accel (void)
         GList *l;
         for (l = devs; l != NULL; l = l->next)
         {
-            sprintf (buf, "xinput --set-prop %s \"libinput Accel Speed\" %s", l->data, fstr);
+            sprintf (buf, "xinput --set-prop %s \"libinput Accel Speed\" %s", (char *) l->data, fstr);
             system (buf);
         }
 
@@ -446,14 +440,6 @@ static gboolean on_mouse_accel_changed (GtkRange* range, GdkEventButton *event, 
     facc = (gtk_range_get_value (range) / 5.0) - 1.0;
     matimer = g_timeout_add (500, accel_handler, NULL);
     return FALSE;
-}
-
-static void on_mouse_threshold_changed(GtkRange* range, gpointer user_data)
-{
-    /* threshold = 110 - sensitivity. The lower the threshold, the higher the sensitivity */
-    threshold = (int)gtk_range_get_value(range);
-    XChangePointerControl(GDK_DISPLAY_XDISPLAY(gdk_display_get_default()), False, True,
-                             0, 10, threshold);
 }
 
 static void set_kbd_rates (void)
@@ -685,12 +671,11 @@ void read_mouse_speed (void)
 {
     FILE *fp;
     char *cmd, buf[20];
-    float val;
 
     if (devs != NULL)
     {
-        cmd = g_strdup_printf ("xinput list-props %s | grep \"Accel Speed\" | head -n 1 | cut -f 3", devs->data);
-        if (fp = popen (cmd, "r"))
+        cmd = g_strdup_printf ("xinput list-props %s | grep \"Accel Speed\" | head -n 1 | cut -f 3", (char *) devs->data);
+        if ((fp = popen (cmd, "r")) != NULL)
         {
             if (fgets (buf, sizeof (buf) - 1, fp))
             {
@@ -708,7 +693,6 @@ void read_wayfire_values (void)
     GError *err;
     char *user_config_file;
     GKeyFile *kfu, *kfs;
-    int val;
 
     /* open user and system config files */
     user_config_file = g_build_filename (g_get_user_config_dir (), "wayfire.ini", NULL);
@@ -846,7 +830,7 @@ void read_labwc_values (void)
         if (xpathObj->nodesetval)
         {
             node = xpathObj->nodesetval->nodeTab[0];
-            if (node && xmlNodeGetContent (node) && !strcmp (xmlNodeGetContent (node), "yes")) left_handed = TRUE;
+            if (node && xmlNodeGetContent (node) && !strcmp ((const char *) xmlNodeGetContent (node), "yes")) left_handed = TRUE;
         }
         xmlXPathFreeObject (xpathObj);
     }
@@ -1082,7 +1066,7 @@ int main(int argc, char** argv)
             GList *l;
             for (l = devs; l != NULL; l = l->next)
             {
-                sprintf (buf, "xinput --set-prop %s \"libinput Accel Speed\" %s", l->data, fstr);
+                sprintf (buf, "xinput --set-prop %s \"libinput Accel Speed\" %s", (char *) l->data, fstr);
                 system (buf);
             }
             g_settings_set_double (mouse_settings, "speed", facc);
