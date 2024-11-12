@@ -49,7 +49,7 @@
 static GtkWidget *dlg;
 static GtkRange *mouse_accel;
 static GtkRange *mouse_dclick;
-static GtkToggleButton* mouse_left_handed;
+static GtkSwitch* mouse_left_handed;
 static GtkRange *kb_delay;
 static GtkRange *kb_interval;
 static GtkToggleButton* kb_beep;
@@ -564,9 +564,9 @@ static void set_left_handed_mouse()
     }
 }
 
-static void on_left_handed_toggle(GtkToggleButton* btn, gpointer user_data)
+static void on_left_handed_toggle(GtkSwitch* btn, gboolean state, gpointer user_data)
 {
-    left_handed = gtk_toggle_button_get_active(btn);
+    left_handed = state;
     set_left_handed_mouse(left_handed);
 }
 
@@ -578,26 +578,9 @@ static void on_kb_beep_toggle(GtkToggleButton* btn, gpointer user_data)
     XChangeKeyboardControl(GDK_DISPLAY_XDISPLAY(gdk_display_get_default()), KBBellPercent, &values);
 }
 
-/*
-static gboolean on_change_val(GtkRange *range, GtkScrollType scroll,
-                                 gdouble value, gpointer user_data)
-{
-    int interval = GPOINTER_TO_INT(user_data);
-    return FALSE;
-}
-*/
-
 static void on_set_keyboard_ext (GtkButton* btn, gpointer ptr)
 {
     g_spawn_command_line_async ("rc_gui -k", NULL);
-}
-
-static void set_range_stops(GtkRange* range, int interval )
-{
-/*
-    g_signal_connect(range, "change-value",
-                    G_CALLBACK(on_change_val), GINT_TO_POINTER(interval));
-*/
 }
 
 static void load_settings()
@@ -885,11 +868,9 @@ int main(int argc, char** argv)
     /* build the UI */
     builder = gtk_builder_new_from_file( PACKAGE_DATA_DIR "/ui/rasputin.ui" );
     dlg = (GtkWidget*)gtk_builder_get_object( builder, "dlg" );
-    //gtk_dialog_set_alternative_button_order( (GtkDialog*)dlg, GTK_RESPONSE_OK, GTK_RESPONSE_CANCEL, -1 );
 
     mouse_accel = (GtkRange*)gtk_builder_get_object(builder,"mouse_accel");
-    //mouse_threshold = (GtkRange*)gtk_builder_get_object(builder,"mouse_threshold");
-    mouse_left_handed = (GtkToggleButton*)gtk_builder_get_object(builder,"left_handed");
+    mouse_left_handed = (GtkSwitch*)gtk_builder_get_object(builder,"left_handed");
     mouse_dclick = (GtkRange*)gtk_builder_get_object(builder, "mouse_dclick");
 
     kb_delay = (GtkRange*)gtk_builder_get_object(builder,"kb_delay");
@@ -914,24 +895,18 @@ int main(int argc, char** argv)
 
     /* init the UI */
     gtk_range_set_value(mouse_accel, (facc + 1) * 5.0);
-    //gtk_range_set_value(mouse_threshold, threshold);
     gtk_range_set_value(mouse_dclick, dclick);
-    gtk_toggle_button_set_active(mouse_left_handed, left_handed);
+    gtk_switch_set_active(mouse_left_handed, left_handed);
 
     gtk_range_set_value(kb_delay, delay);
     gtk_range_set_value(kb_interval, interval);
     gtk_toggle_button_set_active(kb_beep, beep);
 
-    set_range_stops(mouse_accel, 10);
     g_signal_connect(mouse_accel, "button-release-event", G_CALLBACK(on_mouse_accel_changed), NULL);
-    //set_range_stops(mouse_threshold, 10);
-    //g_signal_connect(mouse_threshold, "value-changed", G_CALLBACK(on_mouse_threshold_changed), NULL);
-    g_signal_connect(mouse_left_handed, "toggled", G_CALLBACK(on_left_handed_toggle), NULL);
+    g_signal_connect(mouse_left_handed, "state-set", G_CALLBACK(on_left_handed_toggle), NULL);
     g_signal_connect(mouse_dclick, "button-release-event", G_CALLBACK(on_mouse_dclick_changed), NULL);
 
-    set_range_stops(kb_delay, 10);
     g_signal_connect(kb_delay, "button-release-event", G_CALLBACK(on_kb_range_changed), &delay);
-    set_range_stops(kb_interval, 10);
     g_signal_connect(kb_interval, "button-release-event", G_CALLBACK(on_kb_range_changed), &interval);
     g_signal_connect(kb_beep, "toggled", G_CALLBACK(on_kb_beep_toggle), NULL);
     g_signal_connect(kb_layout, "clicked", G_CALLBACK(on_set_keyboard_ext), NULL);

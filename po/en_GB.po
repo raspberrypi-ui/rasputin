@@ -75,7 +75,7 @@ msgstr "Delay before each key starts repeating"
 
 #: ../data/lxinput.ui.h:11
 msgid "Repeat delay:"
-msgstr "Repeat delay:"
+msgstr "Repeat Delay:"
 
 #: ../data/lxinput.ui.h:12
 msgid "Interval between each key repeat"
@@ -91,7 +91,7 @@ msgstr "Short"
 
 #: ../data/lxinput.ui.h:15
 msgid "Repeat interval:"
-msgstr "Repeat interval:"
+msgstr "Repeat Interval:"
 
 #: ../data/lxinput.ui.h:16
 msgid "Type in the following box to test your keyboard settings"
