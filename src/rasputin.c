@@ -672,6 +672,16 @@ void read_mouse_speed (void)
     }
 }
 
+void read_openbox_values (void)
+{
+    get_valid_mice ();
+    load_settings();
+    read_mouse_speed ();
+    update_facc_str ();
+    mouse_settings = g_settings_new ("org.gnome.desktop.peripherals.mouse");
+    keyboard_settings = g_settings_new ("org.gnome.desktop.peripherals.keyboard");
+}
+
 void read_wayfire_values (void)
 {
     GError *err;
@@ -832,7 +842,7 @@ void read_labwc_values (void)
 int main(int argc, char** argv)
 {
     GtkBuilder* builder;
-    char* str = NULL, *rel_path, *user_config_file;
+    char* str = NULL, *user_config_file;
     GKeyFile* kf = g_key_file_new();
     gsize len;
 
@@ -844,19 +854,6 @@ int main(int argc, char** argv)
     }
     else wm = WM_OPENBOX;
 
-    if (wm == WM_WAYFIRE) read_wayfire_values ();
-    else if (wm == WM_LABWC) read_labwc_values ();
-    else
-    {
-        get_valid_mice ();
-
-        const char* session_name = g_getenv("DESKTOP_SESSION");
-        /* load settings from current session config files */
-        if(!session_name) session_name = "LXDE";
-
-        rel_path = g_strconcat("lxsession/", session_name, "/desktop.conf", NULL);
-        user_config_file = g_build_filename(g_get_user_config_dir(), rel_path, NULL);
-    }
 
     bindtextdomain ( GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR );
     bind_textdomain_codeset ( GETTEXT_PACKAGE, "UTF-8" );
@@ -886,15 +883,11 @@ int main(int argc, char** argv)
     g_object_unref( builder );
 
     /* read the config file */
-    if (wm == WM_OPENBOX)
-    {
-        load_settings();
-        read_mouse_speed ();
-        update_facc_str ();
-        mouse_settings = g_settings_new ("org.gnome.desktop.peripherals.mouse");
-        keyboard_settings = g_settings_new ("org.gnome.desktop.peripherals.keyboard");
-    }
-    else gtk_widget_hide (beep_box);
+    if (wm == WM_WAYFIRE) read_wayfire_values ();
+    else if (wm == WM_LABWC) read_labwc_values ();
+    else read_openbox_values ();
+
+    if (wm != WM_OPENBOX) gtk_widget_hide (beep_box);
 
     /* init the UI */
     gtk_range_set_value(mouse_accel, (facc + 1) * 5.0);
@@ -918,6 +911,12 @@ int main(int argc, char** argv)
     {
         if (wm == WM_OPENBOX)
         {
+            const char* session_name = g_getenv("DESKTOP_SESSION");
+            if(!session_name) session_name = "LXDE";
+
+            char *rel_path = g_strconcat("lxsession/", session_name, "/desktop.conf", NULL);
+            user_config_file = g_build_filename(g_get_user_config_dir(), rel_path, NULL);
+
             if(!g_key_file_load_from_file(kf, user_config_file, G_KEY_FILE_KEEP_COMMENTS|G_KEY_FILE_KEEP_TRANSLATIONS, NULL))
             {
                 /* the user config file doesn't exist, create its parent dir */
@@ -1047,7 +1046,6 @@ int main(int argc, char** argv)
                 system (buf);
             }
             g_settings_set_double (mouse_settings, "speed", facc);
-            g_free(user_config_file);
         }
     }
 
