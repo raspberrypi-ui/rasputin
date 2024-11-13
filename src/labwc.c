@@ -1,11 +1,22 @@
+#include <locale.h>
+#include <gtk/gtk.h>
+#include <sys/stat.h>
+#include <libxml/xpathInternals.h>
+
 #include "rasputin.h"
 
-#include <sys/stat.h>
-
-
-#include <libxml/xpath.h>
-#include <libxml/xpathInternals.h>
 #define XC(str) ((xmlChar *) str)
+
+static GSettings *mouse_settings;
+static char fstr[16];
+static char *update_facc_str (void)
+{
+    char *oldloc = setlocale (LC_NUMERIC, NULL);
+    setlocale (LC_NUMERIC, "POSIX");
+    sprintf (fstr, "%f", accel);
+    setlocale (LC_NUMERIC, oldloc);
+    return fstr;
+}
 
 static void set_xml_value (const char *lvl1, const char *lvl2, const char *l2attr, const char *l2atval, const char *name, const char *val)
 {

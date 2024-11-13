@@ -1,92 +1,81 @@
-/*
- *      lxinput.c
- *
- *      Copyright 2009-2011 PCMan <pcman.tw@gmail.com>
- *      Copyright 2009 martyj19 <martyj19@comcast.net>
- *      Copyright 2011-2013 Julien Lavergne <julien.lavergne@gmail.com>
- *      Copyright 2014 Andriy Grytsenko <andrej@rep.kiev.ua>
- *
- *      This program is free software; you can redistribute it and/or modify
- *      it under the terms of the GNU General Public License as published by
- *      the Free Software Foundation; either version 2 of the License, or
- *      (at your option) any later version.
- *
- *      This program is distributed in the hope that it will be useful,
- *      but WITHOUT ANY WARRANTY; without even the implied warranty of
- *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *      GNU General Public License for more details.
- *
- *      You should have received a copy of the GNU General Public License
- *      along with this program; if not, write to the Free Software
- *      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- *      MA 02110-1301, USA.
- */
+/*============================================================================
+Copyright (c) 2024 Raspberry Pi Holdings Ltd.
+Some code based on lxinput from the LXDE project :
+Copyright (c) 2009-2014 PCMan, martyj19, Julien Lavergne, Andri Grytsenko
+All rights reserved.
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the copyright holder nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+============================================================================*/
+
+#include <locale.h>
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
-#include <glib/gstdio.h>
-#include <string.h>
-#include <math.h>
-#include <stdlib.h>
-#include <sys/stat.h>
-#include <wordexp.h>
-#include <locale.h>
-
 #include "rasputin.h"
-
-
-static GtkWidget *dlg;
-static GtkRange *mouse_accel;
-static GtkRange *mouse_dclick;
-static GtkSwitch *mouse_left_handed;
-static GtkRange *kb_delay;
-static GtkRange *kb_interval;
-static GtkButton* kb_layout;
-
-int dclick = 250, old_dclick = 250;
-gboolean left_handed = FALSE, old_left_handed = FALSE;
-float accel = 0.0, old_accel = 0.0;
-char fstr[16];
-int delay = 500, old_delay = 500;
-int interval = 30, old_interval = 30;
-static guint dctimer = 0, matimer = 0, kbtimer = 0;
-
-GSettings *mouse_settings, *keyboard_settings;
-
 
 extern km_functions_t labwc_functions;
 extern km_functions_t openbox_functions;
 extern km_functions_t wayfire_functions;
 
+/*----------------------------------------------------------------------------*/
+/* Typedefs and macros */
+/*----------------------------------------------------------------------------*/
+
+#define TIMEOUT_MS 500
+
+/*----------------------------------------------------------------------------*/
+/* Global data */
+/*----------------------------------------------------------------------------*/
+
+GtkWidget *dlg, *mouse_accel, *mouse_dclick, *mouse_left_handed,
+    *kb_delay, *kb_interval, *kb_layout;
+int dclick, old_dclick, delay, old_delay, interval, old_interval;
+float accel, old_accel;
+gboolean left_handed, old_left_handed;
+guint dctimer = 0, matimer = 0, kbtimer = 0;
+GSettings *mouse_settings, *keyboard_settings;
 km_functions_t km_fn;
 
+/*----------------------------------------------------------------------------*/
+/* Function prototypes */
+/*----------------------------------------------------------------------------*/
 
-char *update_facc_str (void)
-{
-    char *oldloc = setlocale (LC_NUMERIC, NULL);
-    setlocale (LC_NUMERIC, "POSIX");
-    sprintf (fstr, "%f", accel);
-    setlocale (LC_NUMERIC, oldloc);
-    return fstr;
-}
+static gboolean dclick_handler (gpointer data);
+static gboolean accel_handler (gpointer data);
+static gboolean kbd_handler (gpointer data);
+static gboolean on_mouse_dclick_changed (GtkRange* range, GdkEventButton *event, gpointer user_data);
+static gboolean on_mouse_accel_changed (GtkRange* range, GdkEventButton *event, gpointer user_data);
+static gboolean on_kb_range_changed (GtkRange* range, GdkEventButton *event, int *val);
+static void on_left_handed_toggle (GtkSwitch* btn, gboolean state, gpointer user_data);
+static void on_set_keyboard_ext (GtkButton* btn, gpointer ptr);
 
+/*----------------------------------------------------------------------------*/
+/* Timer handlers */
+/*----------------------------------------------------------------------------*/
 
 static gboolean dclick_handler (gpointer data)
 {
     km_fn.set_doubleclick ();
     dctimer = 0;
-    return FALSE;
-}
-
-static gboolean on_mouse_dclick_changed (GtkRange* range, GdkEventButton *event, gpointer user_data)
-{
-    if (dctimer) g_source_remove (dctimer);
-    dclick = gtk_range_get_value (range);
-    dctimer = g_timeout_add (500, dclick_handler, NULL);
     return FALSE;
 }
 
@@ -97,14 +86,6 @@ static gboolean accel_handler (gpointer data)
     return FALSE;
 }
 
-static gboolean on_mouse_accel_changed (GtkRange* range, GdkEventButton *event, gpointer user_data)
-{
-    if (matimer) g_source_remove (matimer);
-    accel = (gtk_range_get_value (range) / 5.0) - 1.0;
-    matimer = g_timeout_add (500, accel_handler, NULL);
-    return FALSE;
-}
-
 static gboolean kbd_handler (gpointer data)
 {
     km_fn.set_keyboard ();
@@ -112,15 +93,35 @@ static gboolean kbd_handler (gpointer data)
     return FALSE;
 }
 
+/*----------------------------------------------------------------------------*/
+/* Widget handlers */
+/*----------------------------------------------------------------------------*/
+
+static gboolean on_mouse_dclick_changed (GtkRange* range, GdkEventButton *event, gpointer user_data)
+{
+    if (dctimer) g_source_remove (dctimer);
+    dclick = gtk_range_get_value (range);
+    dctimer = g_timeout_add (TIMEOUT_MS, dclick_handler, NULL);
+    return FALSE;
+}
+
+static gboolean on_mouse_accel_changed (GtkRange* range, GdkEventButton *event, gpointer user_data)
+{
+    if (matimer) g_source_remove (matimer);
+    accel = (gtk_range_get_value (range) / 5.0) - 1.0;
+    matimer = g_timeout_add (TIMEOUT_MS, accel_handler, NULL);
+    return FALSE;
+}
+
 static gboolean on_kb_range_changed (GtkRange* range, GdkEventButton *event, int *val)
 {
     if (kbtimer) g_source_remove (kbtimer);
     *val = (int) gtk_range_get_value (range);
-    kbtimer = g_timeout_add (500, kbd_handler, NULL);
+    kbtimer = g_timeout_add (TIMEOUT_MS, kbd_handler, NULL);
     return FALSE;
 }
 
-static void on_left_handed_toggle(GtkSwitch* btn, gboolean state, gpointer user_data)
+static void on_left_handed_toggle (GtkSwitch* btn, gboolean state, gpointer user_data)
 {
     left_handed = state;
     km_fn.set_lefthanded ();
@@ -131,87 +132,81 @@ static void on_set_keyboard_ext (GtkButton* btn, gpointer ptr)
     g_spawn_command_line_async ("rc_gui -k", NULL);
 }
 
+/*----------------------------------------------------------------------------*/
+/* Main function */
+/*----------------------------------------------------------------------------*/
 
-int main(int argc, char** argv)
+int main (int argc, char* argv[])
 {
-    GtkBuilder* builder;
+    GtkBuilder *builder;
 
-    // check window manager
+    setlocale (LC_ALL, "");
+    bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
+    bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
+    textdomain (GETTEXT_PACKAGE);
+
     if (getenv ("WAYLAND_DISPLAY"))
     {
-        if (getenv ("WAYFIRE_CONFIG_FILE"))
-            km_fn = wayfire_functions;
-        else
-            km_fn = labwc_functions;
+        if (getenv ("WAYFIRE_CONFIG_FILE")) km_fn = wayfire_functions;
+        else km_fn = labwc_functions;
     }
     else km_fn = openbox_functions;
 
+    gtk_init (&argc, &argv);
 
-    bindtextdomain ( GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR );
-    bind_textdomain_codeset ( GETTEXT_PACKAGE, "UTF-8" );
-    textdomain ( GETTEXT_PACKAGE );
+    gtk_icon_theme_prepend_search_path (gtk_icon_theme_get_default (), PACKAGE_DATA_DIR);
 
-    gtk_init(&argc, &argv);
+    /* create the dialog */
+    builder = gtk_builder_new_from_file (PACKAGE_DATA_DIR "/ui/rasputin.ui");
 
-    gtk_icon_theme_prepend_search_path(gtk_icon_theme_get_default(), PACKAGE_DATA_DIR);
+    dlg = (GtkWidget *) gtk_builder_get_object (builder, "dlg");
 
-    /* build the UI */
-    builder = gtk_builder_new_from_file( PACKAGE_DATA_DIR "/ui/rasputin.ui" );
-    dlg = (GtkWidget*)gtk_builder_get_object( builder, "dlg" );
+    mouse_accel = (GtkWidget *) gtk_builder_get_object (builder,"mouse_accel");
+    g_signal_connect (mouse_accel, "button-release-event", G_CALLBACK (on_mouse_accel_changed), NULL);
 
-    mouse_accel = (GtkRange*)gtk_builder_get_object(builder,"mouse_accel");
-    mouse_left_handed = (GtkSwitch*)gtk_builder_get_object(builder,"left_handed");
-    mouse_dclick = (GtkRange*)gtk_builder_get_object(builder, "mouse_dclick");
+    mouse_dclick = (GtkWidget *) gtk_builder_get_object (builder, "mouse_dclick");
+    g_signal_connect (mouse_dclick, "button-release-event", G_CALLBACK (on_mouse_dclick_changed), NULL);
 
-    kb_delay = (GtkRange*)gtk_builder_get_object(builder,"kb_delay");
-    kb_interval = (GtkRange*)gtk_builder_get_object(builder,"kb_interval");
-    kb_layout = (GtkButton*)gtk_builder_get_object(builder,"keyboard_layout");
+    mouse_left_handed = (GtkWidget *) gtk_builder_get_object (builder,"left_handed");
+    g_signal_connect (mouse_left_handed, "state-set", G_CALLBACK (on_left_handed_toggle), NULL);
 
-    g_object_unref( builder );
+    kb_delay = (GtkWidget *) gtk_builder_get_object (builder,"kb_delay");
+    g_signal_connect (kb_delay, "button-release-event", G_CALLBACK (on_kb_range_changed), &delay);
 
-    /* read the config file */
+    kb_interval = (GtkWidget *) gtk_builder_get_object (builder,"kb_interval");
+    g_signal_connect (kb_interval, "button-release-event", G_CALLBACK (on_kb_range_changed), &interval);
+
+    kb_layout = (GtkWidget *) gtk_builder_get_object (builder,"keyboard_layout");
+    g_signal_connect (kb_layout, "clicked", G_CALLBACK (on_set_keyboard_ext), NULL);
+
+    g_object_unref (builder);
+
+    /* load the current state */
     km_fn.load_config ();
-    
+
+    gtk_range_set_value (GTK_RANGE (mouse_accel), (accel + 1) * 5.0);
+    gtk_range_set_value (GTK_RANGE (mouse_dclick), dclick);
+    gtk_switch_set_active (GTK_SWITCH (mouse_left_handed), left_handed);
+
+    gtk_range_set_value (GTK_RANGE (kb_delay), delay);
+    gtk_range_set_value (GTK_RANGE (kb_interval), interval);
+
     old_left_handed = left_handed;
     old_accel = accel;
     old_dclick = dclick;
     old_delay = delay;
     old_interval = interval;
     
-    
-
-    /* init the UI */
-    gtk_range_set_value(mouse_accel, (accel + 1) * 5.0);
-    gtk_range_set_value(mouse_dclick, dclick);
-    gtk_switch_set_active(mouse_left_handed, left_handed);
-
-    gtk_range_set_value(kb_delay, delay);
-    gtk_range_set_value(kb_interval, interval);
-
-    g_signal_connect(mouse_accel, "button-release-event", G_CALLBACK(on_mouse_accel_changed), NULL);
-    g_signal_connect(mouse_dclick, "button-release-event", G_CALLBACK(on_mouse_dclick_changed), NULL);
-    g_signal_connect(mouse_left_handed, "state-set", G_CALLBACK(on_left_handed_toggle), NULL);
-
-    g_signal_connect(kb_delay, "button-release-event", G_CALLBACK(on_kb_range_changed), &delay);
-    g_signal_connect(kb_interval, "button-release-event", G_CALLBACK(on_kb_range_changed), &interval);
-    g_signal_connect(kb_layout, "clicked", G_CALLBACK(on_set_keyboard_ext), NULL);
-
-    if( gtk_dialog_run( (GtkDialog*)dlg ) == GTK_RESPONSE_OK )
-    {
-        km_fn.save_config ();
-    }
+    /* run the dialog */
+    if (gtk_dialog_run (GTK_DIALOG (dlg)) == GTK_RESPONSE_OK) km_fn.save_config ();
     else
     {
-        /* restore to original settings */
-
-        /* keyboard */
+        /* revert to initial state on cancel */
+        left_handed = old_left_handed;
+        accel = old_accel;
+        dclick = old_dclick;
         delay = old_delay;
         interval = old_interval;
-
-        /* mouse */
-        accel = old_accel;
-        left_handed = old_left_handed;
-        dclick = old_dclick;
 
         km_fn.set_acceleration ();
         km_fn.set_doubleclick ();
@@ -219,8 +214,10 @@ int main(int argc, char** argv)
         km_fn.set_lefthanded ();
     }
 
-    gtk_widget_destroy( dlg );
-
+    gtk_widget_destroy (dlg);
 
     return 0;
 }
+
+/* End of file */
+/*============================================================================*/

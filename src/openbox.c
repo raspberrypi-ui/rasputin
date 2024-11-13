@@ -1,16 +1,27 @@
+#include <locale.h>
+#include <gtk/gtk.h>
+#include <gdk/gdkx.h>
+#include <X11/XKBlib.h>
+#include <glib/gi18n.h>
+
 #include "rasputin.h"
 
-#include <X11/Xlib.h>
-#include <X11/XKBlib.h>
-#include <gdk/gdkx.h>
-#include <locale.h>
-
-#include <glib/gi18n.h>
 
 #define DEFAULT_SES "LXDE-pi"
 
 static GList *devs = NULL;
+static GSettings *mouse_settings, *keyboard_settings;
 
+
+static char fstr[16];
+static char *update_facc_str (void)
+{
+    char *oldloc = setlocale (LC_NUMERIC, NULL);
+    setlocale (LC_NUMERIC, "POSIX");
+    sprintf (fstr, "%f", accel);
+    setlocale (LC_NUMERIC, oldloc);
+    return fstr;
+}
 
 float get_float (char *str)
 {
@@ -237,7 +248,6 @@ static void load_config (void)
     get_valid_mice ();
     load_settings();
     read_mouse_speed ();
-    update_facc_str ();
     mouse_settings = g_settings_new ("org.gnome.desktop.peripherals.mouse");
     keyboard_settings = g_settings_new ("org.gnome.desktop.peripherals.keyboard");
 }
@@ -392,7 +402,7 @@ static void save_config (void)
                               _("LXInput autostart"),
                               _("Setup keyboard and mouse using settings done in LXInput"),
                               /* FIXME: how to setup left-handed mouse? */
-                              accel * 10, delay, 1000 / interval,
+                              (int) accel * 10, delay, 1000 / interval,
                               left_handed ? ";xmodmap -e \"pointer = 3 2 1\"" : "",
                               fstr);
         g_file_set_contents(user_config_file, str, -1, NULL);

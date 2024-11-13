@@ -1,4 +1,7 @@
+#include <gtk/gtk.h>
+
 #include "rasputin.h"
+static GSettings *mouse_settings;
 
 
 static void load_config (void)
