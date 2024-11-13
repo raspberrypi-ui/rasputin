@@ -23,6 +23,7 @@ typedef struct {
     void (*set_acceleration) (void);
     void (*set_keyboard) (void);
     void (*set_lefthanded) (void);
+    void (*save_config) (void);
 } km_functions_t;
 
 extern char *update_facc_str (void);

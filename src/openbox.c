@@ -5,6 +5,7 @@
 #include <gdk/gdkx.h>
 #include <locale.h>
 
+#include <glib/gi18n.h>
 
 #define DEFAULT_SES "LXDE-pi"
 
@@ -343,6 +344,72 @@ static void set_lefthanded (void)
     }
  }
 
+static void save_config (void)
+{
+    char* str = NULL, *user_config_file;
+    GKeyFile* kf = g_key_file_new();
+    gsize len;
+    const char* session_name = g_getenv("DESKTOP_SESSION");
+    if(!session_name) session_name = "LXDE";
+
+    char *rel_path = g_strconcat("lxsession/", session_name, "/desktop.conf", NULL);
+    user_config_file = g_build_filename(g_get_user_config_dir(), rel_path, NULL);
+
+    if(!g_key_file_load_from_file(kf, user_config_file, G_KEY_FILE_KEEP_COMMENTS|G_KEY_FILE_KEEP_TRANSLATIONS, NULL))
+    {
+        /* the user config file doesn't exist, create its parent dir */
+        len = strlen(user_config_file) - strlen("/desktop.conf");
+        user_config_file[len] = '\0';
+        g_debug("user_config_file = %s", user_config_file);
+        g_mkdir_with_parents(user_config_file, 0700);
+        user_config_file[len] = '/';
+
+        g_key_file_load_from_dirs(kf, rel_path, (const char**)g_get_system_config_dirs(), NULL,
+                                  G_KEY_FILE_KEEP_COMMENTS|G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
+    }
+
+    g_free(rel_path);
+
+    g_key_file_set_integer(kf, "Mouse", "AccFactor", accel);
+    g_key_file_set_integer(kf, "Mouse", "AccThreshold", threshold);
+    g_key_file_set_integer(kf, "Mouse", "LeftHanded", !!left_handed);
+
+    g_key_file_set_integer(kf, "Keyboard", "Delay", delay);
+    g_key_file_set_integer(kf, "Keyboard", "Interval", interval);
+
+    str = g_key_file_to_data(kf, &len, NULL);
+    g_file_set_contents(user_config_file, str, len, NULL);
+    g_free(str);
+
+    /* ask the settigns daemon to reload */
+    /* FIXME: is this needed? */
+    /* g_spawn_command_line_sync("lxde-settings-daemon reload", NULL, NULL, NULL, NULL); */
+
+    /* also save settings into autostart file for non-lxsession sessions */
+    g_free(user_config_file);
+    rel_path = g_build_filename(g_get_user_config_dir(), "autostart", NULL);
+    user_config_file = g_build_filename(rel_path, "LXinput-setup.desktop", NULL);
+    if (g_mkdir_with_parents(rel_path, 0755) == 0)
+    {
+        str = g_strdup_printf("[Desktop Entry]\n"
+                              "Type=Application\n"
+                              "Name=%s\n"
+                              "Comment=%s\n"
+                              "NoDisplay=true\n"
+                              "Exec=sh -c 'xset m %d/10 %d r rate %d %d %s; for id in $(xinput list | grep pointer | grep slave | cut -f 2 | cut -d = -f 2 ) ; do xinput --set-prop $id \"libinput Accel Speed\" %s 2> /dev/null ; done'\n"
+                              "NotShowIn=GNOME;KDE;XFCE;\n",
+                              _("LXInput autostart"),
+                              _("Setup keyboard and mouse using settings done in LXInput"),
+                              /* FIXME: how to setup left-handed mouse? */
+                              accel, threshold, delay, 1000 / interval,
+                              left_handed ? ";xmodmap -e \"pointer = 3 2 1\"" : "",
+                              fstr);
+        g_file_set_contents(user_config_file, str, -1, NULL);
+        g_free(str);
+    }
+    g_free(user_config_file);
+    g_key_file_free( kf );
+}
 
 
 
@@ -356,4 +423,5 @@ km_functions_t openbox_functions = {
     .set_acceleration = set_acceleration,
     .set_keyboard = set_keyboard,
     .set_lefthanded = set_lefthanded,
+    .save_config = save_config,
 };

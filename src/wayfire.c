@@ -129,6 +129,9 @@ static void set_lefthanded (void)
     g_free (user_config_file);
 }
 
+static void save_config (void)
+{
+}
 
 
 
@@ -142,4 +145,5 @@ km_functions_t wayfire_functions = {
     .set_acceleration = set_acceleration,
     .set_keyboard = set_keyboard,
     .set_lefthanded = set_lefthanded,
+    .save_config = save_config,
 };

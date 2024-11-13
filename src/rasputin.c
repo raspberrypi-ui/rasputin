@@ -77,13 +77,6 @@ typedef enum {
     WM_LABWC } wm_type;
 static wm_type wm;
 
-/* Globals accessed from multiple threads */
-
-GThread *pthread;
-
-/* Lists for keyboard setting */
-
-GtkListStore *model_list, *layout_list, *variant_list;
 
 char *update_facc_str (void)
 {
@@ -155,9 +148,6 @@ static void on_set_keyboard_ext (GtkButton* btn, gpointer ptr)
 int main(int argc, char** argv)
 {
     GtkBuilder* builder;
-    char* str = NULL, *user_config_file;
-    GKeyFile* kf = g_key_file_new();
-    gsize len;
 
     // check window manager
     if (getenv ("WAYLAND_DISPLAY"))
@@ -231,68 +221,7 @@ int main(int argc, char** argv)
 
     if( gtk_dialog_run( (GtkDialog*)dlg ) == GTK_RESPONSE_OK )
     {
-        if (wm == WM_OPENBOX)
-        {
-            const char* session_name = g_getenv("DESKTOP_SESSION");
-            if(!session_name) session_name = "LXDE";
-
-            char *rel_path = g_strconcat("lxsession/", session_name, "/desktop.conf", NULL);
-            user_config_file = g_build_filename(g_get_user_config_dir(), rel_path, NULL);
-
-            if(!g_key_file_load_from_file(kf, user_config_file, G_KEY_FILE_KEEP_COMMENTS|G_KEY_FILE_KEEP_TRANSLATIONS, NULL))
-            {
-                /* the user config file doesn't exist, create its parent dir */
-                len = strlen(user_config_file) - strlen("/desktop.conf");
-                user_config_file[len] = '\0';
-                g_debug("user_config_file = %s", user_config_file);
-                g_mkdir_with_parents(user_config_file, 0700);
-                user_config_file[len] = '/';
-
-                g_key_file_load_from_dirs(kf, rel_path, (const char**)g_get_system_config_dirs(), NULL,
-                                          G_KEY_FILE_KEEP_COMMENTS|G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
-            }
-
-            g_free(rel_path);
-
-            g_key_file_set_integer(kf, "Mouse", "AccFactor", accel);
-            g_key_file_set_integer(kf, "Mouse", "AccThreshold", threshold);
-            g_key_file_set_integer(kf, "Mouse", "LeftHanded", !!left_handed);
-
-            g_key_file_set_integer(kf, "Keyboard", "Delay", delay);
-            g_key_file_set_integer(kf, "Keyboard", "Interval", interval);
-
-            str = g_key_file_to_data(kf, &len, NULL);
-            g_file_set_contents(user_config_file, str, len, NULL);
-            g_free(str);
-
-            /* ask the settigns daemon to reload */
-            /* FIXME: is this needed? */
-            /* g_spawn_command_line_sync("lxde-settings-daemon reload", NULL, NULL, NULL, NULL); */
-
-            /* also save settings into autostart file for non-lxsession sessions */
-            g_free(user_config_file);
-            rel_path = g_build_filename(g_get_user_config_dir(), "autostart", NULL);
-            user_config_file = g_build_filename(rel_path, "LXinput-setup.desktop", NULL);
-            if (g_mkdir_with_parents(rel_path, 0755) == 0)
-            {
-                str = g_strdup_printf("[Desktop Entry]\n"
-                                      "Type=Application\n"
-                                      "Name=%s\n"
-                                      "Comment=%s\n"
-                                      "NoDisplay=true\n"
-                                      "Exec=sh -c 'xset m %d/10 %d r rate %d %d %s; for id in $(xinput list | grep pointer | grep slave | cut -f 2 | cut -d = -f 2 ) ; do xinput --set-prop $id \"libinput Accel Speed\" %s 2> /dev/null ; done'\n"
-                                      "NotShowIn=GNOME;KDE;XFCE;\n",
-                                      _("LXInput autostart"),
-                                      _("Setup keyboard and mouse using settings done in LXInput"),
-                                      /* FIXME: how to setup left-handed mouse? */
-                                      accel, threshold, delay, 1000 / interval,
-                                      left_handed ? ";xmodmap -e \"pointer = 3 2 1\"" : "",
-                                      fstr);
-                g_file_set_contents(user_config_file, str, -1, NULL);
-                g_free(str);
-            }
-            g_free(user_config_file);
-        }
+        km_fn.save_config ();
     }
     else
     {
@@ -309,64 +238,14 @@ int main(int argc, char** argv)
         facc = old_facc;
         dclick = old_dclick;
 
-            km_fn.set_acceleration ();
-            km_fn.set_doubleclick ();
-            km_fn.set_keyboard ();
-            km_fn.set_lefthanded ();
-
-#if 0
-
-        set_dclick_time ();
-        if (wm == WM_WAYFIRE)
-        {
-            user_config_file = g_build_filename (g_get_user_config_dir (), "wayfire.ini", NULL);
-
-            g_key_file_load_from_file (kf, user_config_file, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
-
-            g_key_file_set_integer (kf, "input", "kb_repeat_delay", delay);
-            g_key_file_set_integer (kf, "input", "kb_repeat_rate", 1000 / interval);
-            g_key_file_set_double (kf, "input", "mouse_cursor_speed", facc);
-            g_key_file_set_boolean (kf, "input", "left_handed_mode", left_handed);
-
-            str = g_key_file_to_data (kf, &len, NULL);
-            g_file_set_contents (user_config_file, str, len, NULL);
-            g_free (str);
-
-            g_free (user_config_file);
-        }
-        else if (wm == WM_LABWC)
-        {
-            km_fn.set_acceleration ();
-            km_fn.set_doubleclick ();
-            km_fn.set_keyboard ();
-            km_fn.set_lefthanded ();
-        }
-        else
-        {
-            XkbSetAutoRepeatRate(GDK_DISPLAY_XDISPLAY(gdk_display_get_default()), XkbUseCoreKbd, delay, interval);
-            g_settings_set_uint (keyboard_settings, "repeat-interval", interval);
-            g_settings_set_uint (keyboard_settings, "delay", delay);
-
-            //XChangePointerControl(GDK_DISPLAY_XDISPLAY(gdk_display_get_default()), True, True,
-            //                         accel, 10, threshold);
-            set_left_handed_mouse();
-
-            char buf[256];
-            update_facc_str ();
-            GList *l;
-            for (l = devs; l != NULL; l = l->next)
-            {
-                sprintf (buf, "xinput --set-prop %s \"libinput Accel Speed\" %s", (char *) l->data, fstr);
-                system (buf);
-            }
-            g_settings_set_double (mouse_settings, "speed", facc);
-        }
-#endif
+        km_fn.set_acceleration ();
+        km_fn.set_doubleclick ();
+        km_fn.set_keyboard ();
+        km_fn.set_lefthanded ();
     }
 
     gtk_widget_destroy( dlg );
 
-    g_key_file_free( kf );
 
     return 0;
 }
