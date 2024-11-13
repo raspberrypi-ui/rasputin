@@ -115,6 +115,7 @@ static void load_config (void)
     xmlNode *node;
 
     mouse_settings = g_settings_new ("org.gnome.desktop.peripherals.mouse");
+    dclick = g_settings_get_int (mouse_settings, "double-click");
 
     // labwc default values if nothing set in rc.xml
     interval = 40;
@@ -193,8 +194,6 @@ static void load_config (void)
     xmlCleanupParser ();
 
     g_free (user_config_file);
-    mouse_settings = g_settings_new ("org.gnome.desktop.peripherals.mouse");
-    dclick = g_settings_get_int (mouse_settings, "double-click");
 }
 
 static void set_doubleclick (void)

@@ -51,8 +51,9 @@ GtkWidget *dlg, *mouse_accel, *mouse_dclick, *mouse_left_handed,
 int dclick, old_dclick, delay, old_delay, interval, old_interval;
 float accel, old_accel;
 gboolean left_handed, old_left_handed;
+
 guint dctimer = 0, matimer = 0, kbtimer = 0;
-GSettings *mouse_settings, *keyboard_settings;
+
 km_functions_t km_fn;
 
 /*----------------------------------------------------------------------------*/
