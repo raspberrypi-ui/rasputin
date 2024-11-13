@@ -1,3 +1,30 @@
+/*============================================================================
+Copyright (c) 2024 Raspberry Pi Holdings Ltd.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the copyright holder nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+============================================================================*/
+
 #include <locale.h>
 #include <gtk/gtk.h>
 #include <sys/stat.h>
@@ -8,15 +35,6 @@
 #define XC(str) ((xmlChar *) str)
 
 static GSettings *mouse_settings;
-static char fstr[16];
-static char *update_facc_str (void)
-{
-    char *oldloc = setlocale (LC_NUMERIC, NULL);
-    setlocale (LC_NUMERIC, "POSIX");
-    sprintf (fstr, "%f", accel);
-    setlocale (LC_NUMERIC, oldloc);
-    return fstr;
-}
 
 static void set_xml_value (const char *lvl1, const char *lvl2, const char *l2attr, const char *l2atval, const char *name, const char *val)
 {
@@ -107,6 +125,8 @@ static void set_xml_value (const char *lvl1, const char *lvl2, const char *l2att
 
 static void load_config (void)
 {
+    const char *oldloc = setlocale (LC_NUMERIC, NULL);
+
     char *user_config_file = g_build_filename (g_get_user_config_dir (), "labwc/rc.xml", NULL);;
     char *dir = g_path_get_dirname (user_config_file);
     int val;
@@ -173,7 +193,9 @@ static void load_config (void)
         if (xpathObj->nodesetval)
         {
             node = xpathObj->nodesetval->nodeTab[0];
+            setlocale (LC_NUMERIC, "POSIX");
             if (node && sscanf ((const char *) xmlNodeGetContent (node), "%f", &fval) == 1) accel = fval;
+            setlocale (LC_NUMERIC, oldloc);
         }
         xmlXPathFreeObject (xpathObj);
     }
@@ -198,17 +220,29 @@ static void load_config (void)
 
 static void set_doubleclick (void)
 {
+    char *str;
+
     g_settings_set_int (mouse_settings, "double-click", dclick);
-    char *str = g_strdup_printf ("%d", dclick);
+
+    str = g_strdup_printf ("%d", dclick);
     set_xml_value ("mouse", NULL, NULL, NULL, "doubleClickTime", str);
     g_free (str);
+
     system ("labwc -r");
 }
 
 static void set_acceleration (void)
 {
-    update_facc_str ();
-    set_xml_value ("libinput", "device", "category", "default", "pointerSpeed", fstr);
+    const char *oldloc = setlocale (LC_NUMERIC, NULL);
+    char *str;
+
+    setlocale (LC_NUMERIC, "POSIX");
+    str = g_strdup_printf ("%f", accel);
+    setlocale (LC_NUMERIC, oldloc);
+
+    set_xml_value ("libinput", "device", "category", "default", "pointerSpeed", str);
+    g_free (str);
+
     system ("labwc -r");
 }
 
@@ -230,14 +264,14 @@ static void set_keyboard (void)
 static void set_lefthanded (void)
 {
     set_xml_value ("libinput", "device", "category", "default", "leftHanded", left_handed ? "yes" : "no");
+
     system ("labwc -r");
 }
 
 static void save_config (void)
 {
+    /* not needed here - already stored by individual functions */
 }
-
-
 
 /*----------------------------------------------------------------------------*/
 /* Function table */
@@ -251,3 +285,6 @@ km_functions_t labwc_functions = {
     .set_lefthanded = set_lefthanded,
     .save_config = save_config,
 };
+
+/* End of file */
+/*============================================================================*/
