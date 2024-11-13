@@ -52,9 +52,7 @@ static GtkRange *mouse_dclick;
 static GtkSwitch *mouse_left_handed;
 static GtkRange *kb_delay;
 static GtkRange *kb_interval;
-static GtkSwitch* kb_beep;
 static GtkButton* kb_layout;
-GtkWidget *beep_box;
 
 static int accel = 20, old_accel = 20;
 static int threshold = 10, old_threshold = 10;
@@ -65,7 +63,6 @@ static char fstr[16];
 
 static int delay = 500, old_delay = 500;
 static int interval = 30, old_interval = 30;
-static gboolean beep = TRUE, old_beep = TRUE;
 static guint dctimer = 0, matimer = 0, kbtimer = 0;
 
 static GList *devs = NULL;
@@ -571,14 +568,6 @@ static void on_left_handed_toggle(GtkSwitch* btn, gboolean state, gpointer user_
     set_left_handed_mouse(left_handed);
 }
 
-static void on_kb_beep_toggle(GtkSwitch* btn, gboolean state, gpointer user_data)
-{
-    XKeyboardControl values;
-    beep = state;
-    values.bell_percent = beep ? -1 : 0;
-    XChangeKeyboardControl(GDK_DISPLAY_XDISPLAY(gdk_display_get_default()), KBBellPercent, &values);
-}
-
 static void on_set_keyboard_ext (GtkButton* btn, gpointer ptr)
 {
     g_spawn_command_line_async ("rc_gui -k", NULL);
@@ -619,9 +608,6 @@ static void load_settings()
     val = g_key_file_get_integer(kf, "Keyboard", "Interval", NULL);
     if(val > 0)
         old_interval = interval = val;
-
-    if( g_key_file_has_key(kf, "Keyboard", "Beep", NULL ) )
-        old_beep = beep = g_key_file_get_boolean(kf, "Keyboard", "Beep", NULL);
 
     val = g_key_file_get_integer(kf, "GTK", "iNet/DoubleClickTime", NULL);
     if (val > 0)
@@ -873,10 +859,7 @@ int main(int argc, char** argv)
 
     kb_delay = (GtkRange*)gtk_builder_get_object(builder,"kb_delay");
     kb_interval = (GtkRange*)gtk_builder_get_object(builder,"kb_interval");
-    kb_beep = (GtkSwitch*)gtk_builder_get_object(builder,"beep");
     kb_layout = (GtkButton*)gtk_builder_get_object(builder,"keyboard_layout");
-
-    beep_box = GTK_WIDGET (gtk_builder_get_object (builder, "beep_box"));
 
     gtk_button_set_label(kb_layout, _("Keyboard Layout..."));
 
@@ -887,8 +870,6 @@ int main(int argc, char** argv)
     else if (wm == WM_LABWC) read_labwc_values ();
     else read_openbox_values ();
 
-    if (wm != WM_OPENBOX) gtk_widget_hide (beep_box);
-
     /* init the UI */
     gtk_range_set_value(mouse_accel, (facc + 1) * 5.0);
     gtk_range_set_value(mouse_dclick, dclick);
@@ -896,7 +877,6 @@ int main(int argc, char** argv)
 
     gtk_range_set_value(kb_delay, delay);
     gtk_range_set_value(kb_interval, interval);
-    gtk_switch_set_active(kb_beep, beep);
 
     g_signal_connect(mouse_accel, "button-release-event", G_CALLBACK(on_mouse_accel_changed), NULL);
     g_signal_connect(mouse_dclick, "button-release-event", G_CALLBACK(on_mouse_dclick_changed), NULL);
@@ -904,7 +884,6 @@ int main(int argc, char** argv)
 
     g_signal_connect(kb_delay, "button-release-event", G_CALLBACK(on_kb_range_changed), &delay);
     g_signal_connect(kb_interval, "button-release-event", G_CALLBACK(on_kb_range_changed), &interval);
-    g_signal_connect(kb_beep, "state-set", G_CALLBACK(on_kb_beep_toggle), NULL);
     g_signal_connect(kb_layout, "clicked", G_CALLBACK(on_set_keyboard_ext), NULL);
 
     if( gtk_dialog_run( (GtkDialog*)dlg ) == GTK_RESPONSE_OK )
@@ -938,7 +917,6 @@ int main(int argc, char** argv)
 
             g_key_file_set_integer(kf, "Keyboard", "Delay", delay);
             g_key_file_set_integer(kf, "Keyboard", "Interval", interval);
-            g_key_file_set_integer(kf, "Keyboard", "Beep", !!beep);
 
             str = g_key_file_to_data(kf, &len, NULL);
             g_file_set_contents(user_config_file, str, len, NULL);
@@ -959,13 +937,12 @@ int main(int argc, char** argv)
                                       "Name=%s\n"
                                       "Comment=%s\n"
                                       "NoDisplay=true\n"
-                                      "Exec=sh -c 'xset m %d/10 %d r rate %d %d b %s%s; for id in $(xinput list | grep pointer | grep slave | cut -f 2 | cut -d = -f 2 ) ; do xinput --set-prop $id \"libinput Accel Speed\" %s 2> /dev/null ; done'\n"
+                                      "Exec=sh -c 'xset m %d/10 %d r rate %d %d %s; for id in $(xinput list | grep pointer | grep slave | cut -f 2 | cut -d = -f 2 ) ; do xinput --set-prop $id \"libinput Accel Speed\" %s 2> /dev/null ; done'\n"
                                       "NotShowIn=GNOME;KDE;XFCE;\n",
                                       _("LXInput autostart"),
                                       _("Setup keyboard and mouse using settings done in LXInput"),
                                       /* FIXME: how to setup left-handed mouse? */
                                       accel, threshold, delay, 1000 / interval,
-                                      beep ? "on" : "off",
                                       left_handed ? ";xmodmap -e \"pointer = 3 2 1\"" : "",
                                       fstr);
                 g_file_set_contents(user_config_file, str, -1, NULL);
@@ -981,7 +958,6 @@ int main(int argc, char** argv)
         /* keyboard */
         delay = old_delay;
         interval = old_interval;
-        beep = old_beep;
 
         /* mouse */
         accel = old_accel;
@@ -1031,7 +1007,6 @@ int main(int argc, char** argv)
             XkbSetAutoRepeatRate(GDK_DISPLAY_XDISPLAY(gdk_display_get_default()), XkbUseCoreKbd, delay, interval);
             g_settings_set_uint (keyboard_settings, "repeat-interval", interval);
             g_settings_set_uint (keyboard_settings, "delay", delay);
-            /* FIXME: beep? */
 
             //XChangePointerControl(GDK_DISPLAY_XDISPLAY(gdk_display_get_default()), True, True,
             //                         accel, 10, threshold);
