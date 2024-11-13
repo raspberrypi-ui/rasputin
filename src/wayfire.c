@@ -35,12 +35,12 @@ static void load_config (void)
     interval = 1000 / interval;
 
     err = NULL;
-    facc = g_key_file_get_double (kfu, "input", "mouse_cursor_speed", &err);
+    accel = g_key_file_get_double (kfu, "input", "mouse_cursor_speed", &err);
     if (err)
     {
         err = NULL;
-        facc = g_key_file_get_double (kfs, "input", "mouse_cursor_speed", &err);
-        if (err) facc = 0;
+        accel = g_key_file_get_double (kfs, "input", "mouse_cursor_speed", &err);
+        if (err) accel = 0.0;
     }
 
     err = NULL;
@@ -76,7 +76,7 @@ static void set_acceleration (void)
     kf = g_key_file_new ();
     g_key_file_load_from_file (kf, user_config_file, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
 
-    g_key_file_set_double (kf, "input", "mouse_cursor_speed", facc);
+    g_key_file_set_double (kf, "input", "mouse_cursor_speed", accel);
 
     str = g_key_file_to_data (kf, &len, NULL);
     g_file_set_contents (user_config_file, str, len, NULL);

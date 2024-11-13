@@ -108,7 +108,7 @@ static void load_config (void)
     // labwc default values if nothing set in rc.xml
     interval = 40;
     delay = 600;
-    facc = 0.0;
+    accel = 0.0;
     left_handed = FALSE;
 
     // create the directory if needed
@@ -161,7 +161,7 @@ static void load_config (void)
         if (xpathObj->nodesetval)
         {
             node = xpathObj->nodesetval->nodeTab[0];
-            if (node && sscanf ((const char *) xmlNodeGetContent (node), "%f", &fval) == 1) facc = fval;
+            if (node && sscanf ((const char *) xmlNodeGetContent (node), "%f", &fval) == 1) accel = fval;
         }
         xmlXPathFreeObject (xpathObj);
     }

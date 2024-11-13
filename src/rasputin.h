@@ -2,11 +2,9 @@
 #include <gtk/gtk.h>
 
 
-extern int accel;
 extern int dclick;
 extern gboolean left_handed;
-extern float facc;
-extern int threshold;
+extern float accel;
 
 extern int delay;
 extern int interval;

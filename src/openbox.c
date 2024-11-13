@@ -55,7 +55,7 @@ void read_mouse_speed (void)
         {
             if (fgets (buf, sizeof (buf) - 1, fp))
             {
-                facc = get_float (buf);
+                accel = get_float (buf);
             }
             pclose (fp);
         }
@@ -82,13 +82,6 @@ static void load_settings()
     g_free(rel_path);
 
     int val;
-    val = g_key_file_get_integer(kf, "Mouse", "AccFactor", NULL);
-    if( val > 0)
-        accel = val;
-
-    val = g_key_file_get_integer(kf, "Mouse", "AccThreshold", NULL);
-    if( val > 0)
-        threshold = val;
 
     left_handed = g_key_file_get_boolean(kf, "Mouse", "LeftHanded", NULL);
 
@@ -300,7 +293,7 @@ static void set_acceleration (void)
         system (buf);
     }
 
-    g_settings_set_double (mouse_settings, "speed", facc);
+    g_settings_set_double (mouse_settings, "speed", accel);
 }
 
 static void set_keyboard (void)
@@ -370,8 +363,6 @@ static void save_config (void)
 
     g_free(rel_path);
 
-    g_key_file_set_integer(kf, "Mouse", "AccFactor", accel);
-    g_key_file_set_integer(kf, "Mouse", "AccThreshold", threshold);
     g_key_file_set_integer(kf, "Mouse", "LeftHanded", !!left_handed);
 
     g_key_file_set_integer(kf, "Keyboard", "Delay", delay);
@@ -396,12 +387,12 @@ static void save_config (void)
                               "Name=%s\n"
                               "Comment=%s\n"
                               "NoDisplay=true\n"
-                              "Exec=sh -c 'xset m %d/10 %d r rate %d %d %s; for id in $(xinput list | grep pointer | grep slave | cut -f 2 | cut -d = -f 2 ) ; do xinput --set-prop $id \"libinput Accel Speed\" %s 2> /dev/null ; done'\n"
+                              "Exec=sh -c 'xset m %d/10 r rate %d %d %s; for id in $(xinput list | grep pointer | grep slave | cut -f 2 | cut -d = -f 2 ) ; do xinput --set-prop $id \"libinput Accel Speed\" %s 2> /dev/null ; done'\n"
                               "NotShowIn=GNOME;KDE;XFCE;\n",
                               _("LXInput autostart"),
                               _("Setup keyboard and mouse using settings done in LXInput"),
                               /* FIXME: how to setup left-handed mouse? */
-                              accel, threshold, delay, 1000 / interval,
+                              accel * 10, delay, 1000 / interval,
                               left_handed ? ";xmodmap -e \"pointer = 3 2 1\"" : "",
                               fstr);
         g_file_set_contents(user_config_file, str, -1, NULL);

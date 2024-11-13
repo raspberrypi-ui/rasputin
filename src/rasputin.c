@@ -47,15 +47,10 @@ static GtkRange *kb_delay;
 static GtkRange *kb_interval;
 static GtkButton* kb_layout;
 
-int accel = 20, old_accel = 20;
 int dclick = 250, old_dclick = 250;
 gboolean left_handed = FALSE, old_left_handed = FALSE;
-float facc = 0.0, old_facc = 0.0;
+float accel = 0.0, old_accel = 0.0;
 char fstr[16];
-
-int threshold = 10, old_threshold = 10;
-
-
 int delay = 500, old_delay = 500;
 int interval = 30, old_interval = 30;
 static guint dctimer = 0, matimer = 0, kbtimer = 0;
@@ -69,20 +64,12 @@ extern km_functions_t wayfire_functions;
 
 km_functions_t km_fn;
 
-/* Window manager in use */
-
-typedef enum {
-    WM_OPENBOX,
-    WM_WAYFIRE,
-    WM_LABWC } wm_type;
-static wm_type wm;
-
 
 char *update_facc_str (void)
 {
     char *oldloc = setlocale (LC_NUMERIC, NULL);
     setlocale (LC_NUMERIC, "POSIX");
-    sprintf (fstr, "%f", facc);
+    sprintf (fstr, "%f", accel);
     setlocale (LC_NUMERIC, oldloc);
     return fstr;
 }
@@ -113,7 +100,7 @@ static gboolean accel_handler (gpointer data)
 static gboolean on_mouse_accel_changed (GtkRange* range, GdkEventButton *event, gpointer user_data)
 {
     if (matimer) g_source_remove (matimer);
-    facc = (gtk_range_get_value (range) / 5.0) - 1.0;
+    accel = (gtk_range_get_value (range) / 5.0) - 1.0;
     matimer = g_timeout_add (500, accel_handler, NULL);
     return FALSE;
 }
@@ -153,21 +140,11 @@ int main(int argc, char** argv)
     if (getenv ("WAYLAND_DISPLAY"))
     {
         if (getenv ("WAYFIRE_CONFIG_FILE"))
-        {
-            wm = WM_WAYFIRE;
             km_fn = wayfire_functions;
-        }
         else
-        {
-            wm = WM_LABWC;
             km_fn = labwc_functions;
-        }
     }
-    else 
-    {
-        wm = WM_OPENBOX;
-        km_fn = openbox_functions;
-    }
+    else km_fn = openbox_functions;
 
 
     bindtextdomain ( GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR );
@@ -195,16 +172,16 @@ int main(int argc, char** argv)
     /* read the config file */
     km_fn.load_config ();
     
-    old_accel = accel;
-    old_threshold = threshold;
     old_left_handed = left_handed;
-    old_facc = facc;
+    old_accel = accel;
     old_dclick = dclick;
+    old_delay = delay;
+    old_interval = interval;
     
     
 
     /* init the UI */
-    gtk_range_set_value(mouse_accel, (facc + 1) * 5.0);
+    gtk_range_set_value(mouse_accel, (accel + 1) * 5.0);
     gtk_range_set_value(mouse_dclick, dclick);
     gtk_switch_set_active(mouse_left_handed, left_handed);
 
@@ -233,9 +210,7 @@ int main(int argc, char** argv)
 
         /* mouse */
         accel = old_accel;
-        threshold = old_threshold;
         left_handed = old_left_handed;
-        facc = old_facc;
         dclick = old_dclick;
 
         km_fn.set_acceleration ();
