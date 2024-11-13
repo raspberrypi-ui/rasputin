@@ -1,5 +1,8 @@
 sources = files (
-    'rasputin.c'
+    'rasputin.c',
+    'labwc.c',
+    'wayfire.c',
+    'openbox.c'
 )
 
 add_global_arguments('-Wno-unused-result', language : 'c')
