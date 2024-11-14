@@ -32,9 +32,33 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "rasputin.h"
 
+/*----------------------------------------------------------------------------*/
+/* Typedefs and macros */
+/*----------------------------------------------------------------------------*/
+
 #define XC(str) ((xmlChar *) str)
 
+/*----------------------------------------------------------------------------*/
+/* Global data */
+/*----------------------------------------------------------------------------*/
+
 static GSettings *mouse_settings;
+
+/*----------------------------------------------------------------------------*/
+/* Function prototypes */
+/*----------------------------------------------------------------------------*/
+
+static void set_xml_value (const char *lvl1, const char *lvl2, const char *l2attr, const char *l2atval, const char *name, const char *val);
+static void load_config (void);
+static void set_doubleclick (void);
+static void set_acceleration (void);
+static void set_keyboard (void);
+static void set_lefthanded (void);
+static void save_config (void);
+
+/*----------------------------------------------------------------------------*/
+/* Helper functions */
+/*----------------------------------------------------------------------------*/
 
 static void set_xml_value (const char *lvl1, const char *lvl2, const char *l2attr, const char *l2atval, const char *name, const char *val)
 {
@@ -121,7 +145,9 @@ static void set_xml_value (const char *lvl1, const char *lvl2, const char *l2att
     g_free (user_config_file);
 }
 
-
+/*----------------------------------------------------------------------------*/
+/* Exported API */
+/*----------------------------------------------------------------------------*/
 
 static void load_config (void)
 {
@@ -133,6 +159,7 @@ static void load_config (void)
     xmlNode *node;
 
     mouse_settings = g_settings_new ("org.gnome.desktop.peripherals.mouse");
+
     dclick = g_settings_get_int (mouse_settings, "double-click");
 
     // labwc default values if nothing set in rc.xml

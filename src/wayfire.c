@@ -28,14 +28,37 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <gtk/gtk.h>
 
 #include "rasputin.h"
+
+/*----------------------------------------------------------------------------*/
+/* Global data */
+/*----------------------------------------------------------------------------*/
+
 static GSettings *mouse_settings;
 
+/*----------------------------------------------------------------------------*/
+/* Function prototypes */
+/*----------------------------------------------------------------------------*/
+
+static void load_config (void);
+static void set_doubleclick (void);
+static void set_acceleration (void);
+static void set_keyboard (void);
+static void set_lefthanded (void);
+static void save_config (void);
+
+/*----------------------------------------------------------------------------*/
+/* Exported API */
+/*----------------------------------------------------------------------------*/
 
 static void load_config (void)
 {
     GError *err;
     char *user_config_file;
     GKeyFile *kfu, *kfs;
+
+    mouse_settings = g_settings_new ("org.gnome.desktop.peripherals.mouse");
+
+    dclick = g_settings_get_int (mouse_settings, "double-click");
 
     /* open user and system config files */
     user_config_file = g_build_filename (g_get_user_config_dir (), "wayfire.ini", NULL);
@@ -85,9 +108,6 @@ static void load_config (void)
     g_key_file_free (kfu);
     g_key_file_free (kfs);
     g_free (user_config_file);
-
-    mouse_settings = g_settings_new ("org.gnome.desktop.peripherals.mouse");
-    dclick = g_settings_get_int (mouse_settings, "double-click");
 }
 
 static void set_doubleclick (void)
@@ -161,9 +181,8 @@ static void set_lefthanded (void)
 
 static void save_config (void)
 {
+    /* not needed here - already stored by individual functions */
 }
-
-
 
 /*----------------------------------------------------------------------------*/
 /* Function table */
