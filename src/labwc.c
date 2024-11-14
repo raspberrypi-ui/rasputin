@@ -125,8 +125,6 @@ static void set_xml_value (const char *lvl1, const char *lvl2, const char *l2att
 
 static void load_config (void)
 {
-    const char *oldloc = setlocale (LC_NUMERIC, NULL);
-
     char *user_config_file = g_build_filename (g_get_user_config_dir (), "labwc/rc.xml", NULL);;
     char *dir = g_path_get_dirname (user_config_file);
     int val;
@@ -193,9 +191,7 @@ static void load_config (void)
         if (xpathObj->nodesetval)
         {
             node = xpathObj->nodesetval->nodeTab[0];
-            setlocale (LC_NUMERIC, "POSIX");
             if (node && sscanf ((const char *) xmlNodeGetContent (node), "%f", &fval) == 1) accel = fval;
-            setlocale (LC_NUMERIC, oldloc);
         }
         xmlXPathFreeObject (xpathObj);
     }
@@ -233,13 +229,9 @@ static void set_doubleclick (void)
 
 static void set_acceleration (void)
 {
-    const char *oldloc = setlocale (LC_NUMERIC, NULL);
     char *str;
 
-    setlocale (LC_NUMERIC, "POSIX");
     str = g_strdup_printf ("%f", accel);
-    setlocale (LC_NUMERIC, oldloc);
-
     set_xml_value ("libinput", "device", "category", "default", "pointerSpeed", str);
     g_free (str);
 
