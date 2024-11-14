@@ -63,10 +63,10 @@ static void load_config (void)
     /* open user and system config files */
     user_config_file = g_build_filename (g_get_user_config_dir (), "wayfire.ini", NULL);
     kfu = g_key_file_new ();
-    g_key_file_load_from_file (kfu, user_config_file, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
+    g_key_file_load_from_file (kfu, user_config_file, G_KEY_FILE_NONE, NULL);
 
     kfs = g_key_file_new ();
-    g_key_file_load_from_file (kfs, "/etc/wayfire/defaults.ini", G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
+    g_key_file_load_from_file (kfs, "/etc/wayfire/defaults.ini", G_KEY_FILE_NONE, NULL);
 
     err = NULL;
     delay = g_key_file_get_integer (kfu, "input", "kb_repeat_delay", &err);
