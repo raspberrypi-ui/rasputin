@@ -70,7 +70,6 @@ static GList *devs = NULL;
 
 static gint _gdk_send_xevent (GdkDisplay *display, Window window, gboolean propagate, glong event_mask, XEvent *event_send);
 static gboolean gdk_event_send_client_message_to_all_recurse (GdkDisplay *display, XEvent *xev, guint32 xid, guint level);
-static void gdk_screen_broadcast_client_message (GdkScreen *screen, GdkEventClient *event);
 static void reload_all_programs (void);
 static void read_acceleration (void);
 static int read_key_file_int (GKeyFile *user, GKeyFile *sys, const char *section, const char *item, int fallback);
@@ -151,33 +150,18 @@ static gboolean gdk_event_send_client_message_to_all_recurse (GdkDisplay *displa
     return result;
 }
 
-static void gdk_screen_broadcast_client_message (GdkScreen *screen, GdkEventClient *event)
+static void reload_all_programs (void)
 {
     XEvent sev;
-    GdkWindow *root_window;
-
-    g_return_if_fail (event != NULL);
-
-    root_window = gdk_screen_get_root_window (screen);
+    GdkWindow *root_window = gdk_screen_get_root_window (gdk_screen_get_default ());
+    GdkDisplay *display = gdk_screen_get_display (gdk_screen_get_default ());
 
     sev.xclient.type = ClientMessage;
     sev.xclient.display = GDK_WINDOW_XDISPLAY (root_window);
-    sev.xclient.format = event->data_format;
-    memcpy (&sev.xclient.data, &event->data, sizeof (sev.xclient.data));
-    sev.xclient.message_type = gdk_x11_atom_to_xatom_for_display (gdk_screen_get_display (screen), event->message_type);
+    sev.xclient.format = 8;
+    sev.xclient.message_type = gdk_x11_atom_to_xatom_for_display (display, gdk_atom_intern ("_GTK_READ_RCFILES", FALSE));
 
-    gdk_event_send_client_message_to_all_recurse (gdk_screen_get_display (screen), &sev, GDK_WINDOW_XID (root_window), 0);
-}
-
-static void reload_all_programs (void)
-{
-    GdkEventClient event;
-    event.type = GDK_CLIENT_EVENT;
-    event.send_event = TRUE;
-    event.window = NULL;
-    event.message_type = gdk_atom_intern ("_GTK_READ_RCFILES", FALSE);
-    event.data_format = 8;
-    gdk_screen_broadcast_client_message (gdk_screen_get_default (), &event);
+    gdk_event_send_client_message_to_all_recurse (display, &sev, GDK_WINDOW_XID (root_window), 0);
 }
 
 /*----------------------------------------------------------------------------*/
