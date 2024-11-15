@@ -40,6 +40,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /*----------------------------------------------------------------------------*/
 
 #define DEFAULT_SES "LXDE-pi"
+#define DEFAULT_PTR_MAP_SIZE 128
 
 /*----------------------------------------------------------------------------*/
 /* Global data */
@@ -47,7 +48,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 static GList *devs = NULL;
 static GSettings *mouse_settings, *keyboard_settings;
-static char fstr[16];
 
 /*----------------------------------------------------------------------------*/
 /* Function prototypes */
@@ -63,101 +63,6 @@ static void save_config (void);
 /*----------------------------------------------------------------------------*/
 /* Helper functions */
 /*----------------------------------------------------------------------------*/
-
-static char *update_facc_str (void)
-{
-    char *oldloc = setlocale (LC_NUMERIC, NULL);
-    setlocale (LC_NUMERIC, "POSIX");
-    sprintf (fstr, "%f", accel);
-    setlocale (LC_NUMERIC, oldloc);
-    return fstr;
-}
-
-void read_acceleration (void)
-{
-    FILE *fp_dev, *fp_acc;
-    char *cmd, dev[16], acc[32];
-    char *oldloc = setlocale (LC_NUMERIC, NULL);
-    float fval;
-
-    setlocale (LC_NUMERIC, "POSIX");
-    accel = 0.0;
-
-    // query xinput for list of slave pointer devices - returned as ids, one per line
-    fp_dev = popen ("xinput list | grep pointer | grep slave | cut -f 2 | cut -d = -f 2", "r");
-    if (fp_dev)
-    {
-        // loop through devices
-        while (fgets (dev, sizeof (dev) - 1, fp_dev))
-        {
-            g_strstrip (dev);
-
-            // query xinput for acceleration value for each device
-            cmd = g_strdup_printf ("xinput list-props %s | grep \"Accel Speed\" | head -n 1 | cut -f 3", dev);
-            fp_acc = popen (cmd, "r");
-            if (fp_acc)
-            {
-                if (fgets (acc, sizeof (acc) - 1, fp_acc))
-                {
-                    if (sscanf (acc, "%f", &fval) == 1)
-                    {
-                        accel = fval;
-                        devs = g_list_append (devs, g_strdup (dev));
-                    }
-                }
-                pclose (fp_acc);
-            }
-            g_free (cmd);
-        }
-        pclose (fp_dev);
-    }
-
-    setlocale (LC_NUMERIC, oldloc);
-}
-
-int read_key_file_int (GKeyFile *user, GKeyFile *sys, const char *section, const char *item, int fallback)
-{
-    GError *err;
-    int val;
-
-    err = NULL;
-    val = g_key_file_get_integer (user, section, item, &err);
-    if (!err && val > 0) return val;
-
-    err = NULL;
-    val = g_key_file_get_integer (sys, section, item, &err);
-    if (!err && val > 0) return val;
-
-    return fallback;
-}
-
-static void load_settings (void)
-{
-    GKeyFile *kfu, *kfs;
-
-    const char *session_name = g_getenv ("DESKTOP_SESSION");
-    if (!session_name) session_name = DEFAULT_SES;
-
-    char *rel_path = g_strconcat ("lxsession/", session_name, "/desktop.conf", NULL);
-    char *user_config_file = g_build_filename (g_get_user_config_dir(), rel_path, NULL);
-
-    kfu = g_key_file_new ();
-    g_key_file_load_from_file (kfu, user_config_file, G_KEY_FILE_NONE, NULL);
-
-    kfs = g_key_file_new ();
-    g_key_file_load_from_dirs (kfs, rel_path, (const char **) g_get_system_config_dirs (), NULL, G_KEY_FILE_NONE, NULL);
-
-    g_free (rel_path);
-    g_free (user_config_file);
-
-    delay = read_key_file_int (kfu, kfs, "Keyboard", "Delay", 400);
-    interval = read_key_file_int (kfu, kfs, "Keyboard", "Interval", 250);
-    dclick = read_key_file_int (kfu, kfs, "GTK", "iNet/DoubleClickTime", 250);
-    left_handed = read_key_file_int (kfu, kfs, "Mouse", "LeftHanded", 0);
-
-    g_key_file_free (kfu);
-    g_key_file_free (kfs);
-}
 
 #if GTK_CHECK_VERSION(3, 0, 0)
 
@@ -287,6 +192,94 @@ static void reload_all_programs (void)
 
 
 
+
+void read_acceleration (void)
+{
+    FILE *fp_dev, *fp_acc;
+    char *cmd, dev[16], acc[32];
+    char *oldloc = setlocale (LC_NUMERIC, NULL);
+    float fval;
+
+    setlocale (LC_NUMERIC, "POSIX");
+    accel = 0.0;
+
+    // query xinput for list of slave pointer devices - returned as ids, one per line
+    fp_dev = popen ("xinput list | grep pointer | grep slave | cut -f 2 | cut -d = -f 2", "r");
+    if (fp_dev)
+    {
+        // loop through devices
+        while (fgets (dev, sizeof (dev) - 1, fp_dev))
+        {
+            g_strstrip (dev);
+
+            // query xinput for acceleration value for each device
+            cmd = g_strdup_printf ("xinput list-props %s | grep \"Accel Speed\" | head -n 1 | cut -f 3", dev);
+            fp_acc = popen (cmd, "r");
+            if (fp_acc)
+            {
+                if (fgets (acc, sizeof (acc) - 1, fp_acc))
+                {
+                    if (sscanf (acc, "%f", &fval) == 1)
+                    {
+                        accel = fval;
+                        devs = g_list_append (devs, g_strdup (dev));
+                    }
+                }
+                pclose (fp_acc);
+            }
+            g_free (cmd);
+        }
+        pclose (fp_dev);
+    }
+
+    setlocale (LC_NUMERIC, oldloc);
+}
+
+int read_key_file_int (GKeyFile *user, GKeyFile *sys, const char *section, const char *item, int fallback)
+{
+    GError *err;
+    int val;
+
+    err = NULL;
+    val = g_key_file_get_integer (user, section, item, &err);
+    if (!err && val > 0) return val;
+
+    err = NULL;
+    val = g_key_file_get_integer (sys, section, item, &err);
+    if (!err && val > 0) return val;
+
+    return fallback;
+}
+
+static void load_settings (void)
+{
+    GKeyFile *kfu, *kfs;
+    char *config_file;
+
+    const char *session_name = g_getenv ("DESKTOP_SESSION");
+    if (!session_name) session_name = DEFAULT_SES;
+
+    kfu = g_key_file_new ();
+    config_file = g_build_filename (g_get_user_config_dir(), "lxsession", session_name, "desktop.conf", NULL);
+    g_key_file_load_from_file (kfu, config_file, G_KEY_FILE_NONE, NULL);
+    g_free (config_file);
+
+    kfs = g_key_file_new ();
+    config_file = g_build_filename ("/etc", "xdg", "lxsession", session_name, "desktop.conf", NULL);
+    g_key_file_load_from_file (kfs, config_file, G_KEY_FILE_NONE, NULL);
+    g_free (config_file);
+
+    delay = read_key_file_int (kfu, kfs, "Keyboard", "Delay", 400);
+    interval = read_key_file_int (kfu, kfs, "Keyboard", "Interval", 250);
+    dclick = read_key_file_int (kfu, kfs, "GTK", "iNet/DoubleClickTime", 250);
+    left_handed = read_key_file_int (kfu, kfs, "Mouse", "LeftHanded", 0);
+
+    g_key_file_free (kfu);
+    g_key_file_free (kfs);
+}
+
+
+
 /*----------------------------------------------------------------------------*/
 /* Exported API */
 /*----------------------------------------------------------------------------*/
@@ -302,28 +295,27 @@ static void load_config (void)
 
 static void set_doubleclick (void)
 {
-    const char *session_name;
-    char *user_config_file, *str, *scf;
+    char *config_file, *sysconf_file, *str;
     GKeyFile *kf;
     gsize len;
-    
-    // construct the file path
-    session_name = g_getenv ("DESKTOP_SESSION");
-    if (!session_name) session_name = DEFAULT_SES;
-    user_config_file = g_build_filename (g_get_user_config_dir (), "lxsession/", session_name, "/desktop.conf", NULL);
 
-    // read in data from file to a key file
+    const char *session_name = g_getenv ("DESKTOP_SESSION");
+    if (!session_name) session_name = DEFAULT_SES;
+
+    // try to open the user config file
     kf = g_key_file_new ();
-    if (!g_key_file_load_from_file (kf, user_config_file, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL))
+    config_file = g_build_filename (g_get_user_config_dir(), "lxsession", session_name, "desktop.conf", NULL);
+    if (!g_key_file_load_from_file (kf, config_file, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL))
     {
-        // create the local config directory
-        scf = g_path_get_dirname (user_config_file);
-        g_mkdir_with_parents (scf, 0700);
-        g_free (scf);
+        // no user config - create the local config directory
+        str = g_path_get_dirname (config_file);
+        g_mkdir_with_parents (str, 0700);
+        g_free (str);
+
         // load the global config
-        scf = g_build_filename ("/etc/xdg/lxsession/", session_name, "/desktop.conf", NULL);
-        g_key_file_load_from_file (kf, scf, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
-        g_free (scf);
+        sysconf_file = g_build_filename ("/etc", "xdg", "lxsession", session_name, "desktop.conf", NULL);
+        g_key_file_load_from_file (kf, sysconf_file, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
+        g_free (sysconf_file);
     }
 
     // update changed values in the key file
@@ -331,25 +323,30 @@ static void set_doubleclick (void)
 
     // write the modified key file out
     str = g_key_file_to_data (kf, &len, NULL);
-    g_file_set_contents (user_config_file, str, len, NULL);
+    g_file_set_contents (config_file, str, len, NULL);
 
-    g_free (user_config_file);
+    g_free (config_file);
     g_free (str);
+    g_key_file_free (kf);
 
     reload_all_programs ();
 }
 
 static void set_acceleration (void)
 {
-    char buf[256];
-    update_facc_str ();
+    GList *dev;
+    char *cmd;
 
-    GList *l;
-    for (l = devs; l != NULL; l = l->next)
+    char *oldloc = setlocale (LC_NUMERIC, NULL);
+
+    setlocale (LC_NUMERIC, "POSIX");
+    for (dev = devs; dev != NULL; dev = dev->next)
     {
-        sprintf (buf, "xinput set-prop %s \"libinput Accel Speed\" %s", (char *) l->data, fstr);
-        system (buf);
+        cmd = g_strdup_printf ("xinput set-prop %s \"libinput Accel Speed\" %f", (char *) dev->data, accel);
+        system (cmd);
+        g_free (cmd);
     }
+    setlocale (LC_NUMERIC, oldloc);
 
     g_settings_set_double (mouse_settings, "speed", accel);
 }
@@ -364,101 +361,95 @@ static void set_keyboard (void)
 
 static void set_lefthanded (void)
 {
-/* This function is taken from Gnome's control-center 2.6.0.3 (gnome-settings-mouse.c) and was modified*/
-#define DEFAULT_PTR_MAP_SIZE 128
+    /* This function is taken from Gnome's control-center 2.6.0.3 (gnome-settings-mouse.c) and was modified*/
     unsigned char *buttons;
     gint n_buttons, i;
     gint idx_1 = 0, idx_3 = 1;
 
     buttons = g_alloca (DEFAULT_PTR_MAP_SIZE);
-    n_buttons = XGetPointerMapping (GDK_DISPLAY_XDISPLAY(gdk_display_get_default()), buttons, DEFAULT_PTR_MAP_SIZE);
+    n_buttons = XGetPointerMapping (GDK_DISPLAY_XDISPLAY (gdk_display_get_default ()), buttons, DEFAULT_PTR_MAP_SIZE);
     if (n_buttons > DEFAULT_PTR_MAP_SIZE)
     {
         buttons = g_alloca (n_buttons);
-        n_buttons = XGetPointerMapping (GDK_DISPLAY_XDISPLAY(gdk_display_get_default()), buttons, n_buttons);
+        n_buttons = XGetPointerMapping (GDK_DISPLAY_XDISPLAY (gdk_display_get_default ()), buttons, n_buttons);
     }
 
     for (i = 0; i < n_buttons; i++)
     {
-        if (buttons[i] == 1)
-            idx_1 = i;
-        else if (buttons[i] == ((n_buttons < 3) ? 2 : 3))
-            idx_3 = i;
+        if (buttons[i] == 1) idx_1 = i;
+        else if (buttons[i] == ((n_buttons < 3) ? 2 : 3)) idx_3 = i;
     }
 
-    if ((left_handed && idx_1 < idx_3) ||
-        (!left_handed && idx_1 > idx_3))
+    if ((left_handed && idx_1 < idx_3) || (!left_handed && idx_1 > idx_3))
     {
         buttons[idx_1] = ((n_buttons < 3) ? 2 : 3);
         buttons[idx_3] = 1;
-        XSetPointerMapping (GDK_DISPLAY_XDISPLAY(gdk_display_get_default()), buttons, n_buttons);
+        XSetPointerMapping (GDK_DISPLAY_XDISPLAY (gdk_display_get_default ()), buttons, n_buttons);
     }
 }
 
 static void save_config (void)
 {
-    char* str = NULL, *user_config_file;
-    GKeyFile* kf = g_key_file_new();
+    char *config_file, *sysconf_file, *dir, *str;
+    GKeyFile *kf;
     gsize len;
-    const char* session_name = g_getenv("DESKTOP_SESSION");
-    if(!session_name) session_name = "LXDE";
 
-    char *rel_path = g_strconcat("lxsession/", session_name, "/desktop.conf", NULL);
-    user_config_file = g_build_filename(g_get_user_config_dir(), rel_path, NULL);
+    const char *session_name = g_getenv ("DESKTOP_SESSION");
+    if (!session_name) session_name = DEFAULT_SES;
 
-    if(!g_key_file_load_from_file(kf, user_config_file, G_KEY_FILE_KEEP_COMMENTS|G_KEY_FILE_KEEP_TRANSLATIONS, NULL))
+    // try to open the user config file
+    kf = g_key_file_new ();
+    config_file = g_build_filename (g_get_user_config_dir(), "lxsession", session_name, "desktop.conf", NULL);
+    if (!g_key_file_load_from_file (kf, config_file, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL))
     {
-        /* the user config file doesn't exist, create its parent dir */
-        len = strlen(user_config_file) - strlen("/desktop.conf");
-        user_config_file[len] = '\0';
-        g_debug("user_config_file = %s", user_config_file);
-        g_mkdir_with_parents(user_config_file, 0700);
-        user_config_file[len] = '/';
+        // no user config - create the local config directory
+        dir = g_path_get_dirname (config_file);
+        g_mkdir_with_parents (dir, 0700);
+        g_free (dir);
 
-        g_key_file_load_from_dirs(kf, rel_path, (const char**)g_get_system_config_dirs(), NULL,
-                                  G_KEY_FILE_KEEP_COMMENTS|G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
+        // load the global config
+        sysconf_file = g_build_filename ("/etc", "xdg", "lxsession", session_name, "desktop.conf", NULL);
+        g_key_file_load_from_file (kf, sysconf_file, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
+        g_free (sysconf_file);
     }
 
-    g_free(rel_path);
+    // update changed values in the key file
+    g_key_file_set_integer (kf, "Mouse", "LeftHanded", left_handed);
+    g_key_file_set_integer (kf, "Keyboard", "Delay", delay);
+    g_key_file_set_integer (kf, "Keyboard", "Interval", interval);
 
-    g_key_file_set_integer(kf, "Mouse", "LeftHanded", !!left_handed);
+    // write the modified key file out
+    str = g_key_file_to_data (kf, &len, NULL);
+    g_file_set_contents (config_file, str, len, NULL);
 
-    g_key_file_set_integer(kf, "Keyboard", "Delay", delay);
-    g_key_file_set_integer(kf, "Keyboard", "Interval", interval);
+    g_free (config_file);
+    g_free (str);
+    g_key_file_free (kf);
 
-    str = g_key_file_to_data(kf, &len, NULL);
-    g_file_set_contents(user_config_file, str, len, NULL);
-    g_free(str);
-
-    /* ask the settigns daemon to reload */
-    /* FIXME: is this needed? */
-    /* g_spawn_command_line_sync("lxde-settings-daemon reload", NULL, NULL, NULL, NULL); */
+    char *oldloc = setlocale (LC_NUMERIC, NULL);
 
     /* also save settings into autostart file for non-lxsession sessions */
-    g_free(user_config_file);
-    update_facc_str ();
-    rel_path = g_build_filename(g_get_user_config_dir(), "autostart", NULL);
-    user_config_file = g_build_filename(rel_path, "LXinput-setup.desktop", NULL);
-    if (g_mkdir_with_parents(rel_path, 0755) == 0)
-    {
-        str = g_strdup_printf("[Desktop Entry]\n"
+    config_file = g_build_filename (g_get_user_config_dir(), "autostart", "LXinput-setup.desktop", NULL);
+    dir = g_path_get_dirname (config_file);
+    g_mkdir_with_parents (dir, 0755);
+
+    setlocale (LC_NUMERIC, "POSIX");
+    str = g_strdup_printf ("[Desktop Entry]\n"
                               "Type=Application\n"
-                              "Name=%s\n"
-                              "Comment=%s\n"
+                              "Name=LXInput autostart\n"
+                              "Comment=Setup keyboard and mouse using settings done in LXInput\n"
                               "NoDisplay=true\n"
-                              "Exec=sh -c 'xset r rate %d %d %s; for id in $(xinput list | grep pointer | grep slave | cut -f 2 | cut -d = -f 2 ) ; do xinput set-prop $id \"libinput Accel Speed\" %s 2> /dev/null ; done'\n"
+                              "Exec=sh -c 'xset r rate %d %d %s; for id in $(xinput list | grep pointer | grep slave | cut -f 2 | cut -d = -f 2 ) ; do xinput set-prop $id \"libinput Accel Speed\" %f 2> /dev/null ; done'\n"
                               "NotShowIn=GNOME;KDE;XFCE;\n",
-                              _("LXInput autostart"),
-                              _("Setup keyboard and mouse using settings done in LXInput"),
-                              /* FIXME: how to setup left-handed mouse? */
                               delay, 1000 / interval,
                               left_handed ? ";xmodmap -e \"pointer = 3 2 1\"" : "",
-                              fstr);
-        g_file_set_contents(user_config_file, str, -1, NULL);
-        g_free(str);
-    }
-    g_free(user_config_file);
-    g_key_file_free( kf );
+                              accel);
+    setlocale (LC_NUMERIC, oldloc);
+    g_file_set_contents (config_file, str, -1, NULL);
+    g_free (str);
+
+    g_free (dir);
+    g_free (config_file);
 }
 
 /*----------------------------------------------------------------------------*/
