@@ -57,13 +57,10 @@ static void set_doubleclick (void);
 static void set_acceleration (void);
 static void set_keyboard (void);
 static void set_lefthanded (void);
-static void save_config (void);
 
 /*----------------------------------------------------------------------------*/
 /* Helper functions */
 /*----------------------------------------------------------------------------*/
-
-#if GTK_CHECK_VERSION(3, 0, 0)
 
 /* Client message code copied from GTK+2 */
 
@@ -175,9 +172,6 @@ void gdk_event_send_clientmessage_toall (GdkEvent *event)
     gdk_screen_broadcast_client_message (gdk_screen_get_default (), (GdkEventClient *) event);
 }
 
-#endif
-
-
 static void reload_all_programs (void)
 {
     GdkEventClient event;
@@ -186,11 +180,8 @@ static void reload_all_programs (void)
     event.window = NULL;
     event.message_type = gdk_atom_intern("_GTK_READ_RCFILES", FALSE);
     event.data_format = 8;
-    gdk_event_send_clientmessage_toall((GdkEvent *)&event);
+    gdk_event_send_clientmessage_toall ((GdkEvent *) &event);
 }
-
-
-
 
 void read_acceleration (void)
 {
@@ -277,19 +268,7 @@ static void load_settings (void)
     g_key_file_free (kfs);
 }
 
-
-
-/*----------------------------------------------------------------------------*/
-/* Exported API */
-/*----------------------------------------------------------------------------*/
-
-static void load_config (void)
-{
-    read_acceleration ();
-    load_settings ();
-}
-
-static void set_doubleclick (void)
+static void write_lxsession (const char *section, const char *param, int value)
 {
     char *config_file, *sysconf_file, *str;
     GKeyFile *kf;
@@ -314,8 +293,8 @@ static void set_doubleclick (void)
         g_free (sysconf_file);
     }
 
-    // update changed values in the key file
-    g_key_file_set_integer (kf, "GTK", "iNet/DoubleClickTime", dclick);
+    // update value in the key file
+    g_key_file_set_integer (kf, section, param, value);
 
     // write the modified key file out
     str = g_key_file_to_data (kf, &len, NULL);
@@ -324,99 +303,38 @@ static void set_doubleclick (void)
     g_free (config_file);
     g_free (str);
     g_key_file_free (kf);
+}
 
+/*----------------------------------------------------------------------------*/
+/* Exported API */
+/*----------------------------------------------------------------------------*/
+
+static void load_config (void)
+{
+    read_acceleration ();
+    load_settings ();
+}
+
+static void set_doubleclick (void)
+{
+    write_lxsession ("GTK", "iNet/DoubleClickTime", dclick);
     reload_all_programs ();
 }
 
 static void set_acceleration (void)
 {
-    GList *dev;
-    char *cmd;
-
+    char *cmd, *config_file, *dir, *str;
     char *oldloc = setlocale (LC_NUMERIC, NULL);
+    GList *dev;
 
     setlocale (LC_NUMERIC, "POSIX");
+
     for (dev = devs; dev != NULL; dev = dev->next)
     {
         cmd = g_strdup_printf ("xinput set-prop %s \"libinput Accel Speed\" %f", (char *) dev->data, accel);
         system (cmd);
         g_free (cmd);
     }
-    setlocale (LC_NUMERIC, oldloc);
-}
-
-static void set_keyboard (void)
-{
-    /* apply keyboard values */
-    XkbSetAutoRepeatRate (GDK_DISPLAY_XDISPLAY (gdk_display_get_default ()), XkbUseCoreKbd, delay, interval);
-}
-
-static void set_lefthanded (void)
-{
-    /* This function is taken from Gnome's control-center 2.6.0.3 (gnome-settings-mouse.c) and was modified*/
-    unsigned char *buttons;
-    gint n_buttons, i;
-    gint idx_1 = 0, idx_3 = 1;
-
-    buttons = g_alloca (DEFAULT_PTR_MAP_SIZE);
-    n_buttons = XGetPointerMapping (GDK_DISPLAY_XDISPLAY (gdk_display_get_default ()), buttons, DEFAULT_PTR_MAP_SIZE);
-    if (n_buttons > DEFAULT_PTR_MAP_SIZE)
-    {
-        buttons = g_alloca (n_buttons);
-        n_buttons = XGetPointerMapping (GDK_DISPLAY_XDISPLAY (gdk_display_get_default ()), buttons, n_buttons);
-    }
-
-    for (i = 0; i < n_buttons; i++)
-    {
-        if (buttons[i] == 1) idx_1 = i;
-        else if (buttons[i] == ((n_buttons < 3) ? 2 : 3)) idx_3 = i;
-    }
-
-    if ((left_handed && idx_1 < idx_3) || (!left_handed && idx_1 > idx_3))
-    {
-        buttons[idx_1] = ((n_buttons < 3) ? 2 : 3);
-        buttons[idx_3] = 1;
-        XSetPointerMapping (GDK_DISPLAY_XDISPLAY (gdk_display_get_default ()), buttons, n_buttons);
-    }
-}
-
-static void save_config (void)
-{
-    char *config_file, *sysconf_file, *dir, *str;
-    GKeyFile *kf;
-    gsize len;
-
-    const char *session_name = g_getenv ("DESKTOP_SESSION");
-    if (!session_name) session_name = DEFAULT_SES;
-
-    // try to open the user config file
-    kf = g_key_file_new ();
-    config_file = g_build_filename (g_get_user_config_dir(), "lxsession", session_name, "desktop.conf", NULL);
-    if (!g_key_file_load_from_file (kf, config_file, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL))
-    {
-        // no user config - create the local config directory
-        dir = g_path_get_dirname (config_file);
-        g_mkdir_with_parents (dir, 0700);
-        g_free (dir);
-
-        // load the global config
-        sysconf_file = g_build_filename ("/etc", "xdg", "lxsession", session_name, "desktop.conf", NULL);
-        g_key_file_load_from_file (kf, sysconf_file, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
-        g_free (sysconf_file);
-    }
-
-    // update changed values in the key file
-    g_key_file_set_integer (kf, "Mouse", "LeftHanded", left_handed);
-    g_key_file_set_integer (kf, "Keyboard", "Delay", delay);
-    g_key_file_set_integer (kf, "Keyboard", "Interval", interval);
-
-    // write the modified key file out
-    str = g_key_file_to_data (kf, &len, NULL);
-    g_file_set_contents (config_file, str, len, NULL);
-
-    g_free (config_file);
-    g_free (str);
-    g_key_file_free (kf);
 
     // clean up old autostart
     config_file = g_build_filename (g_get_user_config_dir(), "autostart", "LXinput-setup.desktop", NULL);
@@ -429,15 +347,27 @@ static void save_config (void)
     g_mkdir_with_parents (dir, 0755);
     g_free (dir);
 
-    char *oldloc = setlocale (LC_NUMERIC, NULL);
-    setlocale (LC_NUMERIC, "POSIX");
     str = g_strdup_printf ("[Desktop Entry]\nType=Application\nName=rasputin-mouse-accel\nComment=Set mouse acceleration\nNoDisplay=true\nNotShowIn=GNOME;KDE;XFCE;\n"
         "Exec=sh -c 'for id in $(xinput list | grep pointer | grep slave | cut -f 2 | cut -d = -f 2) ; do xinput set-prop $id \"libinput Accel Speed\" %f ; done'\n", accel);
-    setlocale (LC_NUMERIC, oldloc);
     g_file_set_contents (config_file, str, -1, NULL);
     g_free (str);
 
     g_free (config_file);
+
+    setlocale (LC_NUMERIC, oldloc);
+}
+
+static void set_keyboard (void)
+{
+    write_lxsession ("Keyboard", "Delay", delay);
+    write_lxsession ("Keyboard", "Interval", interval);
+    reload_all_programs ();
+}
+
+static void set_lefthanded (void)
+{
+    write_lxsession ("Mouse", "LeftHanded", left_handed);
+    reload_all_programs ();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -450,7 +380,6 @@ km_functions_t openbox_functions = {
     .set_acceleration = set_acceleration,
     .set_keyboard = set_keyboard,
     .set_lefthanded = set_lefthanded,
-    .save_config = save_config,
 };
 
 /* End of file */

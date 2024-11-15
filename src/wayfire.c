@@ -44,7 +44,6 @@ static void set_doubleclick (void);
 static void set_acceleration (void);
 static void set_keyboard (void);
 static void set_lefthanded (void);
-static void save_config (void);
 
 /*----------------------------------------------------------------------------*/
 /* Exported API */
@@ -179,11 +178,6 @@ static void set_lefthanded (void)
     g_free (user_config_file);
 }
 
-static void save_config (void)
-{
-    /* not needed here - already stored by individual functions */
-}
-
 /*----------------------------------------------------------------------------*/
 /* Function table */
 /*----------------------------------------------------------------------------*/
@@ -194,7 +188,6 @@ km_functions_t wayfire_functions = {
     .set_acceleration = set_acceleration,
     .set_keyboard = set_keyboard,
     .set_lefthanded = set_lefthanded,
-    .save_config = save_config,
 };
 
 /* End of file */

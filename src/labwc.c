@@ -54,7 +54,6 @@ static void set_doubleclick (void);
 static void set_acceleration (void);
 static void set_keyboard (void);
 static void set_lefthanded (void);
-static void save_config (void);
 
 /*----------------------------------------------------------------------------*/
 /* Helper functions */
@@ -287,11 +286,6 @@ static void set_lefthanded (void)
     system ("labwc -r");
 }
 
-static void save_config (void)
-{
-    /* not needed here - already stored by individual functions */
-}
-
 /*----------------------------------------------------------------------------*/
 /* Function table */
 /*----------------------------------------------------------------------------*/
@@ -302,7 +296,6 @@ km_functions_t labwc_functions = {
     .set_acceleration = set_acceleration,
     .set_keyboard = set_keyboard,
     .set_lefthanded = set_lefthanded,
-    .save_config = save_config,
 };
 
 /* End of file */

@@ -199,8 +199,7 @@ int main (int argc, char* argv[])
     old_interval = interval;
     
     /* run the dialog */
-    if (gtk_dialog_run (GTK_DIALOG (dlg)) == GTK_RESPONSE_OK) km_fn.save_config ();
-    else
+    if (gtk_dialog_run (GTK_DIALOG (dlg)) != GTK_RESPONSE_OK)
     {
         /* revert to initial state on cancel */
         left_handed = old_left_handed;
