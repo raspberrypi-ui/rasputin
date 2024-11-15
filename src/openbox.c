@@ -42,31 +42,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DEFAULT_SES "LXDE-pi"
 #define DEFAULT_PTR_MAP_SIZE 128
 
-/*----------------------------------------------------------------------------*/
-/* Global data */
-/*----------------------------------------------------------------------------*/
+/* Client message structure copied from GTK+2 */
 
-static GList *devs = NULL;
-
-/*----------------------------------------------------------------------------*/
-/* Function prototypes */
-/*----------------------------------------------------------------------------*/
-
-static void load_config (void);
-static void set_doubleclick (void);
-static void set_acceleration (void);
-static void set_keyboard (void);
-static void set_lefthanded (void);
-
-/*----------------------------------------------------------------------------*/
-/* Helper functions */
-/*----------------------------------------------------------------------------*/
-
-/* Client message code copied from GTK+2 */
-
-typedef struct _GdkEventClient GdkEventClient;
-
-struct _GdkEventClient
+typedef struct
 {
     GdkEventType type;
     GdkWindow *window;
@@ -78,9 +56,37 @@ struct _GdkEventClient
         short s[10];
         long l[5];
     } data;
-};
+} GdkEventClient;
 
-gint _gdk_send_xevent (GdkDisplay *display, Window window, gboolean propagate, glong event_mask, XEvent *event_send)
+/*----------------------------------------------------------------------------*/
+/* Global data */
+/*----------------------------------------------------------------------------*/
+
+static GList *devs = NULL;
+
+/*----------------------------------------------------------------------------*/
+/* Function prototypes */
+/*----------------------------------------------------------------------------*/
+
+static gint _gdk_send_xevent (GdkDisplay *display, Window window, gboolean propagate, glong event_mask, XEvent *event_send);
+static gboolean gdk_event_send_client_message_to_all_recurse (GdkDisplay *display, XEvent *xev, guint32 xid, guint level);
+static void gdk_screen_broadcast_client_message (GdkScreen *screen, GdkEventClient *event);
+static void reload_all_programs (void);
+static void read_acceleration (void);
+static int read_key_file_int (GKeyFile *user, GKeyFile *sys, const char *section, const char *item, int fallback);
+static void load_settings (void);
+static void write_lxsession (const char *section, const char *param, int value);
+static void load_config (void);
+static void set_doubleclick (void);
+static void set_acceleration (void);
+static void set_keyboard (void);
+static void set_lefthanded (void);
+
+/*----------------------------------------------------------------------------*/
+/* Client message code copied from GTK+2 */
+/*----------------------------------------------------------------------------*/
+
+static gint _gdk_send_xevent (GdkDisplay *display, Window window, gboolean propagate, glong event_mask, XEvent *event_send)
 {
     gboolean result;
 
@@ -94,7 +100,6 @@ gint _gdk_send_xevent (GdkDisplay *display, Window window, gboolean propagate, g
     return result;
 }
 
-/* Sends a ClientMessage to all toplevel client windows */
 static gboolean gdk_event_send_client_message_to_all_recurse (GdkDisplay *display, XEvent *xev, guint32 xid, guint level)
 {
     Atom type = None;
@@ -122,7 +127,6 @@ static gboolean gdk_event_send_client_message_to_all_recurse (GdkDisplay *displa
     }
     else
     {
-        /* OK, we're all set, now let's find some windows to send this to */
         if (!XQueryTree (GDK_DISPLAY_XDISPLAY (display), xid, &ret_root, &ret_parent, &ret_children, &ret_nchildren))
             goto out;
 
@@ -147,7 +151,7 @@ static gboolean gdk_event_send_client_message_to_all_recurse (GdkDisplay *displa
     return result;
 }
 
-void gdk_screen_broadcast_client_message (GdkScreen *screen, GdkEventClient *event)
+static void gdk_screen_broadcast_client_message (GdkScreen *screen, GdkEventClient *event)
 {
     XEvent sev;
     GdkWindow *root_window;
@@ -156,20 +160,13 @@ void gdk_screen_broadcast_client_message (GdkScreen *screen, GdkEventClient *eve
 
     root_window = gdk_screen_get_root_window (screen);
 
-    /* Set up our event to send, with the exception of its target window */
     sev.xclient.type = ClientMessage;
     sev.xclient.display = GDK_WINDOW_XDISPLAY (root_window);
     sev.xclient.format = event->data_format;
-    memcpy(&sev.xclient.data, &event->data, sizeof (sev.xclient.data));
+    memcpy (&sev.xclient.data, &event->data, sizeof (sev.xclient.data));
     sev.xclient.message_type = gdk_x11_atom_to_xatom_for_display (gdk_screen_get_display (screen), event->message_type);
 
     gdk_event_send_client_message_to_all_recurse (gdk_screen_get_display (screen), &sev, GDK_WINDOW_XID (root_window), 0);
-}
-
-void gdk_event_send_clientmessage_toall (GdkEvent *event)
-{
-    g_return_if_fail (event != NULL);
-    gdk_screen_broadcast_client_message (gdk_screen_get_default (), (GdkEventClient *) event);
 }
 
 static void reload_all_programs (void)
@@ -178,12 +175,16 @@ static void reload_all_programs (void)
     event.type = GDK_CLIENT_EVENT;
     event.send_event = TRUE;
     event.window = NULL;
-    event.message_type = gdk_atom_intern("_GTK_READ_RCFILES", FALSE);
+    event.message_type = gdk_atom_intern ("_GTK_READ_RCFILES", FALSE);
     event.data_format = 8;
-    gdk_event_send_clientmessage_toall ((GdkEvent *) &event);
+    gdk_screen_broadcast_client_message (gdk_screen_get_default (), &event);
 }
 
-void read_acceleration (void)
+/*----------------------------------------------------------------------------*/
+/* Helper functions */
+/*----------------------------------------------------------------------------*/
+
+static void read_acceleration (void)
 {
     FILE *fp_dev, *fp_acc;
     char *cmd, dev[16], acc[32];
@@ -225,7 +226,7 @@ void read_acceleration (void)
     setlocale (LC_NUMERIC, oldloc);
 }
 
-int read_key_file_int (GKeyFile *user, GKeyFile *sys, const char *section, const char *item, int fallback)
+static int read_key_file_int (GKeyFile *user, GKeyFile *sys, const char *section, const char *item, int fallback)
 {
     GError *err;
     int val;
