@@ -47,7 +47,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /*----------------------------------------------------------------------------*/
 
 static GList *devs = NULL;
-static GSettings *mouse_settings, *keyboard_settings;
 
 /*----------------------------------------------------------------------------*/
 /* Function prototypes */
@@ -288,9 +287,6 @@ static void load_config (void)
 {
     read_acceleration ();
     load_settings ();
-
-    mouse_settings = g_settings_new ("org.gnome.desktop.peripherals.mouse");
-    keyboard_settings = g_settings_new ("org.gnome.desktop.peripherals.keyboard");
 }
 
 static void set_doubleclick (void)
@@ -347,16 +343,12 @@ static void set_acceleration (void)
         g_free (cmd);
     }
     setlocale (LC_NUMERIC, oldloc);
-
-    g_settings_set_double (mouse_settings, "speed", accel);
 }
 
 static void set_keyboard (void)
 {
     /* apply keyboard values */
-    XkbSetAutoRepeatRate(GDK_DISPLAY_XDISPLAY(gdk_display_get_default()), XkbUseCoreKbd, delay, interval);
-    g_settings_set_uint (keyboard_settings, "repeat-interval", interval);
-    g_settings_set_uint (keyboard_settings, "delay", delay);
+    XkbSetAutoRepeatRate (GDK_DISPLAY_XDISPLAY (gdk_display_get_default ()), XkbUseCoreKbd, delay, interval);
 }
 
 static void set_lefthanded (void)
@@ -426,29 +418,25 @@ static void save_config (void)
     g_free (str);
     g_key_file_free (kf);
 
-    char *oldloc = setlocale (LC_NUMERIC, NULL);
-
-    /* also save settings into autostart file for non-lxsession sessions */
+    // clean up old autostart
     config_file = g_build_filename (g_get_user_config_dir(), "autostart", "LXinput-setup.desktop", NULL);
+    remove (config_file);
+    g_free (config_file);
+
+    // save pointer acceleration into autostart
+    config_file = g_build_filename (g_get_user_config_dir(), "autostart", "rasputin-mouse-accel.desktop", NULL);
     dir = g_path_get_dirname (config_file);
     g_mkdir_with_parents (dir, 0755);
+    g_free (dir);
 
+    char *oldloc = setlocale (LC_NUMERIC, NULL);
     setlocale (LC_NUMERIC, "POSIX");
-    str = g_strdup_printf ("[Desktop Entry]\n"
-                              "Type=Application\n"
-                              "Name=LXInput autostart\n"
-                              "Comment=Setup keyboard and mouse using settings done in LXInput\n"
-                              "NoDisplay=true\n"
-                              "Exec=sh -c 'xset r rate %d %d %s; for id in $(xinput list | grep pointer | grep slave | cut -f 2 | cut -d = -f 2 ) ; do xinput set-prop $id \"libinput Accel Speed\" %f 2> /dev/null ; done'\n"
-                              "NotShowIn=GNOME;KDE;XFCE;\n",
-                              delay, 1000 / interval,
-                              left_handed ? ";xmodmap -e \"pointer = 3 2 1\"" : "",
-                              accel);
+    str = g_strdup_printf ("[Desktop Entry]\nType=Application\nName=rasputin-mouse-accel\nComment=Set mouse acceleration\nNoDisplay=true\nNotShowIn=GNOME;KDE;XFCE;\n"
+        "Exec=sh -c 'for id in $(xinput list | grep pointer | grep slave | cut -f 2 | cut -d = -f 2) ; do xinput set-prop $id \"libinput Accel Speed\" %f ; done'\n", accel);
     setlocale (LC_NUMERIC, oldloc);
     g_file_set_contents (config_file, str, -1, NULL);
     g_free (str);
 
-    g_free (dir);
     g_free (config_file);
 }
 
