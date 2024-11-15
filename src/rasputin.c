@@ -66,7 +66,7 @@ static gboolean kbd_handler (gpointer data);
 static gboolean on_mouse_dclick_changed (GtkRange *range, GdkEventButton *event, gpointer user_data);
 static gboolean on_mouse_accel_changed (GtkRange *range, GdkEventButton *event, gpointer user_data);
 static gboolean on_kb_range_changed (GtkRange *range, GdkEventButton *event, int *val);
-static void on_left_handed_toggle (GtkSwitch *btn, gboolean state, gpointer user_data);
+static gboolean on_left_handed_toggle (GtkSwitch *btn, gboolean state, gpointer user_data);
 static void on_set_keyboard_ext (GtkButton *btn, gpointer ptr);
 
 /*----------------------------------------------------------------------------*/
@@ -122,10 +122,11 @@ static gboolean on_kb_range_changed (GtkRange *range, GdkEventButton *event, int
     return FALSE;
 }
 
-static void on_left_handed_toggle (GtkSwitch *btn, gboolean state, gpointer user_data)
+static gboolean on_left_handed_toggle (GtkSwitch *btn, gboolean state, gpointer user_data)
 {
     left_handed = state;
     km_fn.set_lefthanded ();
+    return FALSE;
 }
 
 static void on_set_keyboard_ext (GtkButton *btn, gpointer ptr)
