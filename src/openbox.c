@@ -29,8 +29,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <locale.h>
 #include <gtk/gtk.h>
-#include <gdk/gdkx.h>
-#include <X11/XKBlib.h>
 #include <glib/gi18n.h>
 
 #include "rasputin.h"
