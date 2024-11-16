@@ -51,7 +51,7 @@ static GList *devs = NULL;
 
 static void read_acceleration (void);
 static int read_key_file_int (GKeyFile *user, GKeyFile *sys, const char *section, const char *item, int fallback);
-static void load_settings (void);
+static void read_lxsession (void);
 static void write_lxsession (const char *section, const char *param, int value);
 static void load_config (void);
 static void set_doubleclick (void);
@@ -121,7 +121,7 @@ static int read_key_file_int (GKeyFile *user, GKeyFile *sys, const char *section
     return fallback;
 }
 
-static void load_settings (void)
+static void read_lxsession (void)
 {
     GKeyFile *kfu, *kfs;
     char *config_file;
@@ -192,7 +192,7 @@ static void write_lxsession (const char *section, const char *param, int value)
 static void load_config (void)
 {
     read_acceleration ();
-    load_settings ();
+    read_lxsession ();
 }
 
 static void set_doubleclick (void)
