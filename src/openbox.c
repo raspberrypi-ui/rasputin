@@ -1,7 +1,5 @@
 /*============================================================================
 Copyright (c) 2024 Raspberry Pi Holdings Ltd.
-Some code based on lxinput from the LXDE project :
-Copyright (c) 2009-2014 PCMan, martyj19, Julien Lavergne, Andri Grytsenko
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -39,6 +37,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define DEFAULT_SES "LXDE-pi"
 
+#define DEFAULT_KB_DELAY 400
+#define DEFAULT_KB_INTERVAL 250
+#define DEFAULT_MOUSE_SPEED 0.0
+#define DEFAULT_MOUSE_DCLICK 250
+
 /*----------------------------------------------------------------------------*/
 /* Global data */
 /*----------------------------------------------------------------------------*/
@@ -71,7 +74,7 @@ static void read_acceleration (void)
     float fval;
 
     setlocale (LC_NUMERIC, "POSIX");
-    accel = 0.0;
+    accel = DEFAULT_MOUSE_SPEED;
 
     // query xinput for list of slave pointer devices - returned as ids, one per line
     fp_dev = popen ("xinput list | grep pointer | grep slave | cut -f 2 | cut -d = -f 2", "r");
@@ -139,9 +142,9 @@ static void read_lxsession (void)
     g_key_file_load_from_file (kfs, config_file, G_KEY_FILE_NONE, NULL);
     g_free (config_file);
 
-    delay = read_key_file_int (kfu, kfs, "Keyboard", "Delay", 400);
-    interval = read_key_file_int (kfu, kfs, "Keyboard", "Interval", 250);
-    dclick = read_key_file_int (kfu, kfs, "GTK", "iNet/DoubleClickTime", 250);
+    delay = read_key_file_int (kfu, kfs, "Keyboard", "Delay", DEFAULT_KB_DELAY);
+    interval = read_key_file_int (kfu, kfs, "Keyboard", "Interval", DEFAULT_KB_INTERVAL);
+    dclick = read_key_file_int (kfu, kfs, "GTK", "iNet/DoubleClickTime", DEFAULT_MOUSE_DCLICK);
     left_handed = read_key_file_int (kfu, kfs, "Mouse", "LeftHanded", 0);
 
     g_key_file_free (kfu);
@@ -226,8 +229,8 @@ static void set_acceleration (void)
     g_mkdir_with_parents (dir, 0755);
     g_free (dir);
 
-    str = g_strdup_printf ("[Desktop Entry]\nType=Application\nName=rasputin-mouse-accel\nComment=Set mouse acceleration\nNoDisplay=true\nNotShowIn=GNOME;KDE;XFCE;\n"
-        "Exec=sh -c 'for id in $(xinput list | grep pointer | grep slave | cut -f 2 | cut -d = -f 2) ; do xinput set-prop $id \"libinput Accel Speed\" %f ; done'\n", accel);
+    str = g_strdup_printf ("[Desktop Entry]\nType=Application\nName=rasputin-mouse-accel\nComment=Set mouse acceleration\nNoDisplay=true\n"
+        "Exec=sh -c 'if pgrep openbox ; then for id in $(xinput list | grep pointer | grep slave | cut -f 2 | cut -d = -f 2) ; do xinput set-prop $id \"libinput Accel Speed\" %f ; done ; fi'\n", accel);
     g_file_set_contents (config_file, str, -1, NULL);
     g_free (str);
 
