@@ -36,6 +36,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* Typedefs and macros */
 /*----------------------------------------------------------------------------*/
 
+#define DEFAULT_KB_DELAY 600
+#define DEFAULT_KB_INTERVAL 40
+#define DEFAULT_MOUSE_SPEED 0.0
+#define DEFAULT_MOUSE_DCLICK 400
+
 #define XC(str) ((xmlChar *) str)
 
 /*----------------------------------------------------------------------------*/
@@ -61,14 +66,12 @@ static void set_lefthanded (void);
 
 static void set_xml_value (const char *lvl1, const char *lvl2, const char *l2attr, const char *l2atval, const char *name, const char *val)
 {
-    char *cptr, *attr, *user_config_file = g_build_filename (g_get_user_config_dir (), "labwc/rc.xml", NULL);
+    char *cptr, *user_config_file = g_build_filename (g_get_user_config_dir (), "labwc/rc.xml", NULL);
 
     xmlDocPtr xDoc;
-    xmlNodePtr root, cur_node, node;
+    xmlNodePtr cur_node;
     xmlXPathObjectPtr xpathObj;
     xmlXPathContextPtr xpathCtx;
-
-    if (l2attr) attr = g_strdup_printf ("[@%s=\"%s\"]", l2attr, l2atval);
 
     // read in data from XML file
     xmlInitParser ();
@@ -81,66 +84,64 @@ static void set_xml_value (const char *lvl1, const char *lvl2, const char *l2att
     else xDoc = xmlNewDoc (XC ("1.0"));
     xpathCtx = xmlXPathNewContext (xDoc);
 
-    // check that the nodes exist in the document - create them if not
+    // check that the root node exists - create if not
     xpathObj = xmlXPathEvalExpression (XC ("/*[local-name()='openbox_config']"), xpathCtx);
     if (xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
     {
-        root = xmlNewNode (NULL, XC ("openbox_config"));
-        xmlDocSetRootElement (xDoc, root);
-        xmlNewNs (root, XC ("http://openbox.org/3.4/rc"), NULL);
+        cur_node = xmlNewNode (NULL, XC ("openbox_config"));
+        xmlDocSetRootElement (xDoc, cur_node);
+        xmlNewNs (cur_node, XC ("http://openbox.org/3.4/rc"), NULL);
         xmlXPathRegisterNs (xpathCtx, XC ("openbox_config"), XC ("http://openbox.org/3.4/rc"));
     }
-    else root = xpathObj->nodesetval->nodeTab[0];
+    else
+        cur_node = xpathObj->nodesetval->nodeTab[0];
     xmlXPathFreeObject (xpathObj);
 
-    cptr = g_strdup_printf ("/*[local-name()='openbox_config']/*[local-name()='%s']", lvl1);
-    xpathObj = xmlXPathEvalExpression (XC (cptr), xpathCtx);
-    if (xmlXPathNodeSetIsEmpty (xpathObj->nodesetval)) cur_node = xmlNewChild (root, NULL, XC (lvl1), NULL);
-    else cur_node = xpathObj->nodesetval->nodeTab[0];
+    // check that the top level node (keyboard / mouse / libinput) exists - create if not
+    cptr = g_strdup_printf (".//*[local-name()='%s']", lvl1);
+    xpathObj = xmlXPathNodeEval (cur_node, XC (cptr), xpathCtx);
+    if (xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
+        cur_node = xmlNewChild (cur_node, NULL, XC (lvl1), NULL);
+    else
+        cur_node = xpathObj->nodesetval->nodeTab[0];
     xmlXPathFreeObject (xpathObj);
     g_free (cptr);
 
+    // if a second level is required (libinput), check it exists and create if not
     if (lvl2)
     {
-        cptr = g_strdup_printf ("/*[local-name()='openbox_config']/*[local-name()='%s']/*[local-name()='%s']%s", lvl1, lvl2, l2attr ? attr : "");
-        xpathObj = xmlXPathEvalExpression (XC (cptr), xpathCtx);
+        cptr = g_strdup_printf (".//*[local-name()='%s']", lvl2);
+        xpathObj = xmlXPathNodeEval (cur_node, XC (cptr), xpathCtx);
         if (xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
         {
-            node = xmlNewChild (cur_node, NULL, XC (lvl2), NULL);
-            if (l2attr) xmlSetProp (node, XC (l2attr), XC (l2atval));
+            cur_node = xmlNewChild (cur_node, NULL, XC (lvl2), NULL);
+            xmlSetProp (cur_node, XC (l2attr), XC (l2atval));
         }
+        else
+            cur_node = xpathObj->nodesetval->nodeTab[0];
         xmlXPathFreeObject (xpathObj);
         g_free (cptr);
-        cptr = g_strdup_printf ("/*[local-name()='openbox_config']/*[local-name()='%s']/*[local-name()='%s']%s/*[local-name()='%s']", lvl1, lvl2, l2attr ? attr : "", name);
     }
-    else cptr = g_strdup_printf ("/*[local-name()='openbox_config']/*[local-name()='%s']/*[local-name()='%s']", lvl1, name);
 
-    xpathObj = xmlXPathEvalExpression (XC (cptr), xpathCtx);
+    // add or edit the desired element at the current node
+    cptr = g_strdup_printf (".//*[local-name()='%s']", name);
+    xpathObj = xmlXPathNodeEval (cur_node, XC (cptr), xpathCtx);
     if (xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
-    {
-        xmlXPathFreeObject (xpathObj);
-        g_free (cptr);
-        if (lvl2) cptr = g_strdup_printf ("/*[local-name()='openbox_config']/*[local-name()='%s']/*[local-name()='%s']%s", lvl1, lvl2, l2attr ? attr : "");
-        else cptr = g_strdup_printf ("/*[local-name()='openbox_config']/*[local-name()='%s']", lvl1);
-        xpathObj = xmlXPathEvalExpression (XC (cptr), xpathCtx);
-        cur_node = xpathObj->nodesetval->nodeTab[0];
-        xmlNewChild (cur_node, NULL, XC (name), XC (val));
-    }
+        cur_node = xmlNewChild (cur_node, NULL, XC (name), XC (val));
     else
     {
         cur_node = xpathObj->nodesetval->nodeTab[0];
         xmlNodeSetContent (cur_node, XC (val));
     }
+    xmlXPathFreeObject (xpathObj);
     g_free (cptr);
 
     // cleanup XML
-    xmlXPathFreeObject (xpathObj);
     xmlXPathFreeContext (xpathCtx);
     xmlSaveFile (user_config_file, xDoc);
     xmlFreeDoc (xDoc);
     xmlCleanupParser ();
 
-    if (l2attr) g_free (attr);
     g_free (user_config_file);
 }
 
@@ -158,13 +159,13 @@ static void load_config (void)
     xmlNode *node;
 
     mouse_settings = g_settings_new ("org.gnome.desktop.peripherals.mouse");
-
     dclick = g_settings_get_int (mouse_settings, "double-click");
+    if (!dclick) dclick = DEFAULT_MOUSE_DCLICK;
 
     // labwc default values if nothing set in rc.xml
-    interval = 40;
-    delay = 600;
-    accel = 0.0;
+    interval = DEFAULT_KB_INTERVAL;
+    delay = DEFAULT_KB_DELAY;
+    accel = DEFAULT_MOUSE_SPEED;
     left_handed = FALSE;
 
     // create the directory if needed
