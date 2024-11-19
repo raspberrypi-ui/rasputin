@@ -52,13 +52,13 @@ static GList *devs = NULL;
 /* Function prototypes */
 /*----------------------------------------------------------------------------*/
 
-static void read_acceleration (void);
+static void read_speed (void);
 static int read_key_file_int (GKeyFile *user, GKeyFile *sys, const char *section, const char *item, int fallback);
 static void read_lxsession (void);
 static void write_lxsession (const char *section, const char *param, int value);
 static void load_config (void);
 static void set_doubleclick (void);
-static void set_acceleration (void);
+static void set_speed (void);
 static void set_keyboard (void);
 static void set_lefthanded (void);
 
@@ -66,7 +66,7 @@ static void set_lefthanded (void);
 /* Helper functions */
 /*----------------------------------------------------------------------------*/
 
-static void read_acceleration (void)
+static void read_speed (void)
 {
     FILE *fp_dev, *fp_acc;
     char *cmd, dev[16], acc[32];
@@ -74,7 +74,7 @@ static void read_acceleration (void)
     float fval;
 
     setlocale (LC_NUMERIC, "POSIX");
-    accel = DEFAULT_MOUSE_SPEED;
+    speed = DEFAULT_MOUSE_SPEED;
 
     // query xinput for list of slave pointer devices - returned as ids, one per line
     fp_dev = popen ("xinput list | grep pointer | grep slave | cut -f 2 | cut -d = -f 2", "r");
@@ -94,7 +94,7 @@ static void read_acceleration (void)
                 {
                     if (sscanf (acc, "%f", &fval) == 1)
                     {
-                        accel = fval;
+                        speed = fval;
                         devs = g_list_append (devs, g_strdup (dev));
                     }
                 }
@@ -194,7 +194,7 @@ static void write_lxsession (const char *section, const char *param, int value)
 
 static void load_config (void)
 {
-    read_acceleration ();
+    read_speed ();
     read_lxsession ();
 }
 
@@ -203,7 +203,7 @@ static void set_doubleclick (void)
     write_lxsession ("GTK", "iNet/DoubleClickTime", dclick);
 }
 
-static void set_acceleration (void)
+static void set_speed (void)
 {
     char *cmd, *config_file, *dir, *str;
     char *oldloc = setlocale (LC_NUMERIC, NULL);
@@ -213,7 +213,7 @@ static void set_acceleration (void)
 
     for (dev = devs; dev != NULL; dev = dev->next)
     {
-        cmd = g_strdup_printf ("xinput set-prop %s \"libinput Accel Speed\" %f", (char *) dev->data, accel);
+        cmd = g_strdup_printf ("xinput set-prop %s \"libinput Accel Speed\" %f", (char *) dev->data, speed);
         system (cmd);
         g_free (cmd);
     }
@@ -224,13 +224,13 @@ static void set_acceleration (void)
     g_free (config_file);
 
     // save pointer acceleration into autostart
-    config_file = g_build_filename (g_get_user_config_dir(), "autostart", "rasputin-mouse-accel.desktop", NULL);
+    config_file = g_build_filename (g_get_user_config_dir(), "autostart", "set-mouse-speed.desktop", NULL);
     dir = g_path_get_dirname (config_file);
     g_mkdir_with_parents (dir, 0755);
     g_free (dir);
 
-    str = g_strdup_printf ("[Desktop Entry]\nType=Application\nName=rasputin-mouse-accel\nComment=Set mouse acceleration\nNoDisplay=true\n"
-        "Exec=sh -c 'if pgrep openbox ; then for id in $(xinput list | grep pointer | grep slave | cut -f 2 | cut -d = -f 2) ; do xinput set-prop $id \"libinput Accel Speed\" %f ; done ; fi'\n", accel);
+    str = g_strdup_printf ("[Desktop Entry]\nType=Application\nName=set-mouse-speed\nComment=Set mouse speed\nNoDisplay=true\n"
+        "Exec=sh -c 'if pgrep openbox ; then for id in $(xinput list | grep pointer | grep slave | cut -f 2 | cut -d = -f 2) ; do xinput set-prop $id \"libinput Accel Speed\" %f ; done ; fi'\n", speed);
     g_file_set_contents (config_file, str, -1, NULL);
     g_free (str);
 
@@ -257,7 +257,7 @@ static void set_lefthanded (void)
 km_functions_t openbox_functions = {
     .load_config = load_config,
     .set_doubleclick = set_doubleclick,
-    .set_acceleration = set_acceleration,
+    .set_speed = set_speed,
     .set_keyboard = set_keyboard,
     .set_lefthanded = set_lefthanded,
 };

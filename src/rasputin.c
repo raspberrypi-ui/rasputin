@@ -49,7 +49,7 @@ extern km_functions_t wayfire_functions;
 GtkWidget *dlg, *mouse_accel, *mouse_dclick, *mouse_left_handed,
     *kb_delay, *kb_interval, *kb_layout;
 int dclick, old_dclick, delay, old_delay, interval, old_interval;
-float accel, old_accel;
+float speed, old_speed;
 gboolean left_handed, old_left_handed;
 
 guint dctimer = 0, matimer = 0, kbtimer = 0;
@@ -61,10 +61,10 @@ km_functions_t km_fn;
 /*----------------------------------------------------------------------------*/
 
 static gboolean dclick_handler (gpointer data);
-static gboolean accel_handler (gpointer data);
+static gboolean speed_handler (gpointer data);
 static gboolean kbd_handler (gpointer data);
 static gboolean on_mouse_dclick_changed (GtkRange *range, GdkEventButton *event, gpointer user_data);
-static gboolean on_mouse_accel_changed (GtkRange *range, GdkEventButton *event, gpointer user_data);
+static gboolean on_mouse_speed_changed (GtkRange *range, GdkEventButton *event, gpointer user_data);
 static gboolean on_kb_range_changed (GtkRange *range, GdkEventButton *event, int *val);
 static gboolean on_left_handed_toggle (GtkSwitch *btn, gboolean state, gpointer user_data);
 static void on_set_keyboard_ext (GtkButton *btn, gpointer ptr);
@@ -80,9 +80,9 @@ static gboolean dclick_handler (gpointer data)
     return FALSE;
 }
 
-static gboolean accel_handler (gpointer data)
+static gboolean speed_handler (gpointer data)
 {
-    km_fn.set_acceleration ();
+    km_fn.set_speed ();
     matimer = 0;
     return FALSE;
 }
@@ -106,11 +106,11 @@ static gboolean on_mouse_dclick_changed (GtkRange *range, GdkEventButton *event,
     return FALSE;
 }
 
-static gboolean on_mouse_accel_changed (GtkRange *range, GdkEventButton *event, gpointer user_data)
+static gboolean on_mouse_speed_changed (GtkRange *range, GdkEventButton *event, gpointer user_data)
 {
     if (matimer) g_source_remove (matimer);
-    accel = (gtk_range_get_value (range) / 5.0) - 1.0;
-    matimer = g_timeout_add (TIMEOUT_MS, accel_handler, NULL);
+    speed = (gtk_range_get_value (range) / 5.0) - 1.0;
+    matimer = g_timeout_add (TIMEOUT_MS, speed_handler, NULL);
     return FALSE;
 }
 
@@ -159,7 +159,7 @@ int main (int argc, char* argv[])
 
     /* backup the existing state */
     old_left_handed = left_handed;
-    old_accel = accel;
+    old_speed = speed;
     old_dclick = dclick;
     old_delay = delay;
     old_interval = interval;
@@ -172,8 +172,8 @@ int main (int argc, char* argv[])
     dlg = (GtkWidget *) gtk_builder_get_object (builder, "dlg");
 
     mouse_accel = (GtkWidget *) gtk_builder_get_object (builder,"mouse_accel");
-    gtk_range_set_value (GTK_RANGE (mouse_accel), (accel + 1) * 5.0);
-    g_signal_connect (mouse_accel, "button-release-event", G_CALLBACK (on_mouse_accel_changed), NULL);
+    gtk_range_set_value (GTK_RANGE (mouse_accel), (speed + 1) * 5.0);
+    g_signal_connect (mouse_accel, "button-release-event", G_CALLBACK (on_mouse_speed_changed), NULL);
 
     mouse_dclick = (GtkWidget *) gtk_builder_get_object (builder, "mouse_dclick");
     gtk_range_set_value (GTK_RANGE (mouse_dclick), dclick);
@@ -201,12 +201,12 @@ int main (int argc, char* argv[])
     {
         /* revert to initial state on cancel */
         left_handed = old_left_handed;
-        accel = old_accel;
+        speed = old_speed;
         dclick = old_dclick;
         delay = old_delay;
         interval = old_interval;
 
-        km_fn.set_acceleration ();
+        km_fn.set_speed ();
         km_fn.set_doubleclick ();
         km_fn.set_keyboard ();
         km_fn.set_lefthanded ();

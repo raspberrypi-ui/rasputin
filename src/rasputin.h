@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 typedef struct {
     void (*load_config) (void);
     void (*set_doubleclick) (void);
-    void (*set_acceleration) (void);
+    void (*set_speed) (void);
     void (*set_keyboard) (void);
     void (*set_lefthanded) (void);
 } km_functions_t;
@@ -42,7 +42,7 @@ typedef struct {
 /*----------------------------------------------------------------------------*/
 
 extern int dclick, delay, interval;
-extern float accel;
+extern float speed;
 extern gboolean left_handed;
 
 /* End of file */

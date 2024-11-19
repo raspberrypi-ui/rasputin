@@ -56,7 +56,7 @@ static GSettings *mouse_settings;
 static void set_xml_value (const char *lvl1, const char *lvl2, const char *l2attr, const char *l2atval, const char *name, const char *val);
 static void load_config (void);
 static void set_doubleclick (void);
-static void set_acceleration (void);
+static void set_speed (void);
 static void set_keyboard (void);
 static void set_lefthanded (void);
 
@@ -165,7 +165,7 @@ static void load_config (void)
     // labwc default values if nothing set in rc.xml
     interval = DEFAULT_KB_INTERVAL;
     delay = DEFAULT_KB_DELAY;
-    accel = DEFAULT_MOUSE_SPEED;
+    speed = DEFAULT_MOUSE_SPEED;
     left_handed = FALSE;
 
     // create the directory if needed
@@ -218,7 +218,7 @@ static void load_config (void)
         if (xpathObj->nodesetval)
         {
             node = xpathObj->nodesetval->nodeTab[0];
-            if (node && sscanf ((const char *) xmlNodeGetContent (node), "%f", &fval) == 1) accel = fval;
+            if (node && sscanf ((const char *) xmlNodeGetContent (node), "%f", &fval) == 1) speed = fval;
         }
         xmlXPathFreeObject (xpathObj);
     }
@@ -254,11 +254,11 @@ static void set_doubleclick (void)
     system ("labwc -r");
 }
 
-static void set_acceleration (void)
+static void set_speed (void)
 {
     char *str;
 
-    str = g_strdup_printf ("%f", accel);
+    str = g_strdup_printf ("%f", speed);
     set_xml_value ("libinput", "device", "category", "default", "pointerSpeed", str);
     g_free (str);
 
@@ -294,7 +294,7 @@ static void set_lefthanded (void)
 km_functions_t labwc_functions = {
     .load_config = load_config,
     .set_doubleclick = set_doubleclick,
-    .set_acceleration = set_acceleration,
+    .set_speed = set_speed,
     .set_keyboard = set_keyboard,
     .set_lefthanded = set_lefthanded,
 };

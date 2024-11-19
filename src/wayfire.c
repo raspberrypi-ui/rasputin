@@ -53,7 +53,7 @@ static float read_key_file_float (GKeyFile *user, GKeyFile *sys, const char *sec
 static void write_key_file (const char *section, const char *item, int value, float fval);
 static void load_config (void);
 static void set_doubleclick (void);
-static void set_acceleration (void);
+static void set_speed (void);
 static void set_keyboard (void);
 static void set_lefthanded (void);
 
@@ -139,7 +139,7 @@ static void load_config (void)
     left_handed = read_key_file_int (kfu, kfs, "input", "left_handed_mode", 0);
     delay = read_key_file_int (kfu, kfs, "input", "kb_repeat_delay", DEFAULT_KB_DELAY);
     interval = 1000 / read_key_file_int (kfu, kfs, "input", "kb_repeat_rate", DEFAULT_KB_INTERVAL);
-    accel = read_key_file_float (kfu, kfs, "input", "mouse_cursor_speed", DEFAULT_MOUSE_SPEED);
+    speed = read_key_file_float (kfu, kfs, "input", "mouse_cursor_speed", DEFAULT_MOUSE_SPEED);
 
     g_key_file_free (kfu);
     g_key_file_free (kfs);
@@ -150,9 +150,9 @@ static void set_doubleclick (void)
     g_settings_set_int (mouse_settings, "double-click", dclick);
 }
 
-static void set_acceleration (void)
+static void set_speed (void)
 {
-    write_key_file ("input", "mouse_cursor_speed", -1, accel);
+    write_key_file ("input", "mouse_cursor_speed", -1, speed);
 }
 
 static void set_keyboard (void)
@@ -173,7 +173,7 @@ static void set_lefthanded (void)
 km_functions_t wayfire_functions = {
     .load_config = load_config,
     .set_doubleclick = set_doubleclick,
-    .set_acceleration = set_acceleration,
+    .set_speed = set_speed,
     .set_keyboard = set_keyboard,
     .set_lefthanded = set_lefthanded,
 };
