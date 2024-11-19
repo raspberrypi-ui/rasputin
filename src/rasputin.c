@@ -72,6 +72,8 @@ static gboolean on_mouse_speed_changed (GtkRange *range, GdkEventButton *event, 
 static gboolean on_kb_range_changed (GtkRange *range, GdkEventButton *event, int *val);
 static gboolean on_left_handed_toggle (GtkSwitch *btn, gboolean state, gpointer user_data);
 static void on_set_keyboard_ext (GtkButton *btn, gpointer ptr);
+static gboolean reset_indicator (gpointer ptr);
+static void on_gpress (GtkGestureMultiPress *self, gint n_press, gdouble x, gdouble y, gpointer ptr);
 
 /*----------------------------------------------------------------------------*/
 /* Timer handlers */
@@ -138,15 +140,21 @@ static void on_set_keyboard_ext (GtkButton *btn, gpointer ptr)
     g_spawn_command_line_async ("rc_gui -k", NULL);
 }
 
-void on_gpress (GtkGestureMultiPress *self, gint n_press, gdouble, gdouble, gpointer)
+static gboolean reset_indicator (gpointer ptr)
+{
+    gtk_image_set_from_pixbuf (GTK_IMAGE (dclick_ind), black);
+    return FALSE;
+}
+
+static void on_gpress (GtkGestureMultiPress *self, gint n_press, gdouble x, gdouble y, gpointer ptr)
 {
     if (n_press == 2)
     {
         g_object_unref (gesture);
         gesture = gtk_gesture_multi_press_new (dclick_btn);
         g_signal_connect (gesture, "pressed", G_CALLBACK (on_gpress), NULL);
-        ind_state = !ind_state;
-        gtk_image_set_from_pixbuf (GTK_IMAGE (dclick_ind), ind_state ? white : black);
+        gtk_image_set_from_pixbuf (GTK_IMAGE (dclick_ind), white);
+        g_timeout_add (250, G_SOURCE_FUNC (reset_indicator), NULL);
     }
 }
 
@@ -216,11 +224,10 @@ int main (int argc, char* argv[])
     dclick_ind = (GtkWidget *) gtk_builder_get_object (builder, "dclick_ind");
 
     black = gdk_pixbuf_new (GDK_COLORSPACE_RGB, FALSE, 8, 32, 32);
-    gdk_pixbuf_fill (black, 0x505050ff);
+    gdk_pixbuf_fill (black, 0x707070ff);
     white = gdk_pixbuf_new (GDK_COLORSPACE_RGB, FALSE, 8, 32, 32);
-    gdk_pixbuf_fill (white, 0xa0a0a0ff);
+    gdk_pixbuf_fill (white, 0xffffffff);
     gtk_image_set_from_pixbuf (GTK_IMAGE (dclick_ind), black);
-    ind_state = FALSE;
 
     g_object_unref (builder);
 
