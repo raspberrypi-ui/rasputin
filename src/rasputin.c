@@ -46,7 +46,7 @@ extern km_functions_t wayfire_functions;
 /* Global data */
 /*----------------------------------------------------------------------------*/
 
-GtkWidget *dlg, *mouse_accel, *mouse_dclick, *mouse_left_handed,
+GtkWidget *dlg, *mouse_speed, *mouse_dclick, *mouse_left_handed,
     *kb_delay, *kb_interval, *kb_layout, *dclick_btn, *dclick_ind;
 int dclick, old_dclick, delay, old_delay, interval, old_interval;
 float speed, old_speed;
@@ -195,9 +195,9 @@ int main (int argc, char* argv[])
 
     dlg = (GtkWidget *) gtk_builder_get_object (builder, "dlg");
 
-    mouse_accel = (GtkWidget *) gtk_builder_get_object (builder, "mouse_accel");
-    gtk_range_set_value (GTK_RANGE (mouse_accel), (speed + 1) * 5.0);
-    g_signal_connect (mouse_accel, "button-release-event", G_CALLBACK (on_mouse_speed_changed), NULL);
+    mouse_speed = (GtkWidget *) gtk_builder_get_object (builder, "mouse_speed");
+    gtk_range_set_value (GTK_RANGE (mouse_speed), (speed + 1) * 5.0);
+    g_signal_connect (mouse_speed, "button-release-event", G_CALLBACK (on_mouse_speed_changed), NULL);
 
     mouse_dclick = (GtkWidget *) gtk_builder_get_object (builder, "mouse_dclick");
     gtk_range_set_value (GTK_RANGE (mouse_dclick), dclick);
