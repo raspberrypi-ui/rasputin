@@ -47,7 +47,7 @@ extern km_functions_t wayfire_functions;
 /*----------------------------------------------------------------------------*/
 
 GtkWidget *dlg, *mouse_accel, *mouse_dclick, *mouse_left_handed,
-    *kb_delay, *kb_interval, *kb_layout;
+    *kb_delay, *kb_interval, *kb_layout, *dclick_btn, *dclick_ind;
 int dclick, old_dclick, delay, old_delay, interval, old_interval;
 float speed, old_speed;
 gboolean left_handed, old_left_handed;
@@ -55,6 +55,10 @@ gboolean left_handed, old_left_handed;
 guint dctimer = 0, matimer = 0, kbtimer = 0;
 
 km_functions_t km_fn;
+
+GtkGesture *gesture;
+GdkPixbuf *black, *white;
+gboolean ind_state;
 
 /*----------------------------------------------------------------------------*/
 /* Function prototypes */
@@ -134,6 +138,18 @@ static void on_set_keyboard_ext (GtkButton *btn, gpointer ptr)
     g_spawn_command_line_async ("rc_gui -k", NULL);
 }
 
+void on_gpress (GtkGestureMultiPress *self, gint n_press, gdouble, gdouble, gpointer)
+{
+    if (n_press == 2)
+    {
+        g_object_unref (gesture);
+        gesture = gtk_gesture_multi_press_new (dclick_btn);
+        g_signal_connect (gesture, "pressed", G_CALLBACK (on_gpress), NULL);
+        ind_state = !ind_state;
+        gtk_image_set_from_pixbuf (GTK_IMAGE (dclick_ind), ind_state ? white : black);
+    }
+}
+
 /*----------------------------------------------------------------------------*/
 /* Main function */
 /*----------------------------------------------------------------------------*/
@@ -171,7 +187,7 @@ int main (int argc, char* argv[])
 
     dlg = (GtkWidget *) gtk_builder_get_object (builder, "dlg");
 
-    mouse_accel = (GtkWidget *) gtk_builder_get_object (builder,"mouse_accel");
+    mouse_accel = (GtkWidget *) gtk_builder_get_object (builder, "mouse_accel");
     gtk_range_set_value (GTK_RANGE (mouse_accel), (speed + 1) * 5.0);
     g_signal_connect (mouse_accel, "button-release-event", G_CALLBACK (on_mouse_speed_changed), NULL);
 
@@ -179,20 +195,32 @@ int main (int argc, char* argv[])
     gtk_range_set_value (GTK_RANGE (mouse_dclick), dclick);
     g_signal_connect (mouse_dclick, "button-release-event", G_CALLBACK (on_mouse_dclick_changed), NULL);
 
-    mouse_left_handed = (GtkWidget *) gtk_builder_get_object (builder,"left_handed");
+    mouse_left_handed = (GtkWidget *) gtk_builder_get_object (builder, "left_handed");
     gtk_switch_set_active (GTK_SWITCH (mouse_left_handed), left_handed);
     g_signal_connect (mouse_left_handed, "state-set", G_CALLBACK (on_left_handed_toggle), NULL);
 
-    kb_delay = (GtkWidget *) gtk_builder_get_object (builder,"kb_delay");
+    kb_delay = (GtkWidget *) gtk_builder_get_object (builder, "kb_delay");
     gtk_range_set_value (GTK_RANGE (kb_delay), delay);
     g_signal_connect (kb_delay, "button-release-event", G_CALLBACK (on_kb_range_changed), &delay);
 
-    kb_interval = (GtkWidget *) gtk_builder_get_object (builder,"kb_interval");
+    kb_interval = (GtkWidget *) gtk_builder_get_object (builder, "kb_interval");
     gtk_range_set_value (GTK_RANGE (kb_interval), interval);
     g_signal_connect (kb_interval, "button-release-event", G_CALLBACK (on_kb_range_changed), &interval);
 
-    kb_layout = (GtkWidget *) gtk_builder_get_object (builder,"keyboard_layout");
+    kb_layout = (GtkWidget *) gtk_builder_get_object (builder, "keyboard_layout");
     g_signal_connect (kb_layout, "clicked", G_CALLBACK (on_set_keyboard_ext), NULL);
+
+    dclick_btn = (GtkWidget *) gtk_builder_get_object (builder, "dclick");
+    gesture = gtk_gesture_multi_press_new (dclick_btn);
+    g_signal_connect (gesture, "pressed", G_CALLBACK (on_gpress), NULL);
+    dclick_ind = (GtkWidget *) gtk_builder_get_object (builder, "dclick_ind");
+
+    black = gdk_pixbuf_new (GDK_COLORSPACE_RGB, FALSE, 8, 32, 32);
+    gdk_pixbuf_fill (black, 0x505050ff);
+    white = gdk_pixbuf_new (GDK_COLORSPACE_RGB, FALSE, 8, 32, 32);
+    gdk_pixbuf_fill (white, 0xa0a0a0ff);
+    gtk_image_set_from_pixbuf (GTK_IMAGE (dclick_ind), black);
+    ind_state = FALSE;
 
     g_object_unref (builder);
 
