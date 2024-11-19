@@ -138,6 +138,9 @@
                         <property name="hexpand">True</property>
                         <property name="adjustment">mouse_accel_adj</property>
                         <property name="value-pos">right</property>
+                        <accessibility>
+                          <relation type="labelled-by" target="lbl_accel"/>
+                        </accessibility>
                       </object>
                       <packing>
                         <property name="left-attach">2</property>
@@ -188,6 +191,9 @@
                         <property name="adjustment">mouse_dclick_adj</property>
                         <property name="digits">0</property>
                         <property name="value-pos">right</property>
+                        <accessibility>
+                          <relation type="labelled-by" target="lbl_dclick"/>
+                        </accessibility>
                       </object>
                       <packing>
                         <property name="left-attach">2</property>
@@ -244,6 +250,9 @@
                                 <property name="can-focus">False</property>
                                 <property name="stock">gtk-missing-image</property>
                                 <property name="icon_size">6</property>
+                                <accessibility>
+                                  <relation type="labelled-by" target="dclick_prompt"/>
+                                </accessibility>
                               </object>
                             </child>
                             <child type="label_item">
@@ -288,6 +297,9 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="tooltip-text" translatable="yes">Swap left and right mouse buttons</property>
+                        <accessibility>
+                          <relation type="labelled-by" target="lbl_left"/>
+                        </accessibility>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -355,6 +367,9 @@
                         <property name="adjustment">kb_delay_adj</property>
                         <property name="digits">0</property>
                         <property name="value-pos">right</property>
+                        <accessibility>
+                          <relation type="labelled-by" target="lbl_delay"/>
+                        </accessibility>
                       </object>
                       <packing>
                         <property name="left-attach">2</property>
@@ -371,6 +386,9 @@
                         <property name="adjustment">kb_interval_adj</property>
                         <property name="digits">0</property>
                         <property name="value-pos">right</property>
+                        <accessibility>
+                          <relation type="labelled-by" target="lbl_interval"/>
+                        </accessibility>
                       </object>
                       <packing>
                         <property name="left-attach">2</property>
@@ -457,6 +475,9 @@
                   <object class="GtkEntry" id="kbd_entry">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
+                    <accessibility>
+                      <relation type="labelled-by" target="kbd_prompt"/>
+                    </accessibility>
                   </object>
                   <packing>
                     <property name="expand">False</property>
