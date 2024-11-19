@@ -50,7 +50,8 @@ static GSettings *mouse_settings;
 
 static int read_key_file_int (GKeyFile *user, GKeyFile *sys, const char *section, const char *item, int fallback);
 static float read_key_file_float (GKeyFile *user, GKeyFile *sys, const char *section, const char *item, float fallback);
-static void write_key_file (const char *section, const char *item, int value, float fval);
+static void write_key_file_int (const char *section, const char *item, int value);
+static void write_key_file_float (const char *section, const char *item, float fval);
 static void load_config (void);
 static void set_doubleclick (void);
 static void set_speed (void);
@@ -93,7 +94,7 @@ static float read_key_file_float (GKeyFile *user, GKeyFile *sys, const char *sec
     return fallback;
 }
 
-static void write_key_file (const char *section, const char *item, int value, float fval)
+static void write_key_file_int (const char *section, const char *item, int value)
 {
     char *user_config_file, *str;
     GKeyFile *kf;
@@ -104,8 +105,28 @@ static void write_key_file (const char *section, const char *item, int value, fl
     kf = g_key_file_new ();
     g_key_file_load_from_file (kf, user_config_file, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
 
-    if (value == -1) g_key_file_set_double (kf, section, item, fval);
-    else g_key_file_set_integer (kf, section, item, value);
+    g_key_file_set_integer (kf, section, item, value);
+
+    str = g_key_file_to_data (kf, &len, NULL);
+    g_file_set_contents (user_config_file, str, len, NULL);
+    g_free (str);
+
+    g_key_file_free (kf);
+    g_free (user_config_file);
+}
+
+static void write_key_file_float (const char *section, const char *item, float fval)
+{
+    char *user_config_file, *str;
+    GKeyFile *kf;
+    gsize len;
+
+    user_config_file = g_build_filename (g_get_user_config_dir (), "wayfire.ini", NULL);
+
+    kf = g_key_file_new ();
+    g_key_file_load_from_file (kf, user_config_file, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
+
+    g_key_file_set_double (kf, section, item, fval);
 
     str = g_key_file_to_data (kf, &len, NULL);
     g_file_set_contents (user_config_file, str, len, NULL);
@@ -152,18 +173,18 @@ static void set_doubleclick (void)
 
 static void set_speed (void)
 {
-    write_key_file ("input", "mouse_cursor_speed", -1, speed);
+    write_key_file_float ("input", "mouse_cursor_speed", speed);
 }
 
 static void set_keyboard (void)
 {
-    write_key_file ("input", "kb_repeat_delay", delay, 0.0);
-    write_key_file ("input", "kb_repeat_rate", 1000 / interval, 0.0);
+    write_key_file_int ("input", "kb_repeat_delay", delay);
+    write_key_file_int ("input", "kb_repeat_rate", 1000 / interval);
 }
 
 static void set_lefthanded (void)
 {
-    write_key_file ("input", "left_handed_mode", left_handed, 0.0);
+    write_key_file_int ("input", "left_handed_mode", left_handed);
 }
 
 /*----------------------------------------------------------------------------*/

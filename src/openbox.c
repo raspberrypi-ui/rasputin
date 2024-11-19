@@ -220,7 +220,7 @@ static void set_speed (void)
 
     // clean up old autostart
     config_file = g_build_filename (g_get_user_config_dir(), "autostart", "LXinput-setup.desktop", NULL);
-    remove (config_file);
+    if (g_file_test (config_file, G_FILE_TEST_IS_REGULAR)) remove (config_file);
     g_free (config_file);
 
     // save pointer acceleration into autostart
