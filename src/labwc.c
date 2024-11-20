@@ -108,7 +108,7 @@ static void set_xml_value (const char *lvl1, const char *lvl2, const char *name,
     xmlXPathFreeObject (xpathObj);
     g_free (cptr);
 
-    // if a second level is required (libinput), check it exists and create if not
+    // if a second level is required (libinput device), check it exists - create if not
     if (lvl2)
     {
         cptr = g_strdup_printf ("./" LN ("%s"), lvl2);
