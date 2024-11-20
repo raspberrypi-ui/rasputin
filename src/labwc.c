@@ -54,7 +54,7 @@ static GSettings *mouse_settings;
 /* Function prototypes */
 /*----------------------------------------------------------------------------*/
 
-static void set_xml_value (const char *lvl1, const char *lvl2, const char *l2attr, const char *l2atval, const char *name, const char *val);
+static void set_xml_value (const char *lvl1, const char *lvl2, const char *name, const char *val);
 static void load_config (void);
 static void set_doubleclick (void);
 static void set_speed (void);
@@ -65,7 +65,7 @@ static void set_lefthanded (void);
 /* Helper functions */
 /*----------------------------------------------------------------------------*/
 
-static void set_xml_value (const char *lvl1, const char *lvl2, const char *l2attr, const char *l2atval, const char *name, const char *val)
+static void set_xml_value (const char *lvl1, const char *lvl2, const char *name, const char *val)
 {
     char *cptr, *user_config_file = g_build_filename (g_get_user_config_dir (), "labwc/rc.xml", NULL);
 
@@ -116,7 +116,8 @@ static void set_xml_value (const char *lvl1, const char *lvl2, const char *l2att
         if (xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
         {
             cur_node = xmlNewChild (cur_node, NULL, XC (lvl2), NULL);
-            xmlSetProp (cur_node, XC (l2attr), XC (l2atval));
+            // libinput device nodes require the category property to be set...
+            xmlSetProp (cur_node, XC ("category"), XC ("default"));
         }
         else
             cur_node = xpathObj->nodesetval->nodeTab[0];
@@ -249,7 +250,7 @@ static void set_doubleclick (void)
     g_settings_set_int (mouse_settings, "double-click", dclick);
 
     str = g_strdup_printf ("%d", dclick);
-    set_xml_value ("mouse", NULL, NULL, NULL, "doubleClickTime", str);
+    set_xml_value ("mouse", NULL, "doubleClickTime", str);
     g_free (str);
 
     system ("labwc -r");
@@ -260,7 +261,7 @@ static void set_speed (void)
     char *str;
 
     str = g_strdup_printf ("%f", speed);
-    set_xml_value ("libinput", "device", "category", "default", "pointerSpeed", str);
+    set_xml_value ("libinput", "device", "pointerSpeed", str);
     g_free (str);
 
     system ("labwc -r");
@@ -271,11 +272,11 @@ static void set_keyboard (void)
     char *str;
 
     str = g_strdup_printf ("%d", 1000 / interval);
-    set_xml_value ("keyboard", NULL, NULL, NULL, "repeatRate", str);
+    set_xml_value ("keyboard", NULL, "repeatRate", str);
     g_free (str);
 
     str = g_strdup_printf ("%d", delay);
-    set_xml_value ("keyboard", NULL, NULL, NULL, "repeatDelay", str);
+    set_xml_value ("keyboard", NULL, "repeatDelay", str);
     g_free (str);
 
     system ("labwc -r");
@@ -283,7 +284,7 @@ static void set_keyboard (void)
 
 static void set_lefthanded (void)
 {
-    set_xml_value ("libinput", "device", "category", "default", "leftHanded", left_handed ? "yes" : "no");
+    set_xml_value ("libinput", "device", "leftHanded", left_handed ? "yes" : "no");
 
     system ("labwc -r");
 }
