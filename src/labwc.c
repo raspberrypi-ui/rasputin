@@ -42,6 +42,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DEFAULT_MOUSE_DCLICK 400
 
 #define XC(str) ((xmlChar *) str)
+#define LN(str) "/*[local-name()='"str"']"
 
 /*----------------------------------------------------------------------------*/
 /* Global data */
@@ -85,7 +86,7 @@ static void set_xml_value (const char *lvl1, const char *lvl2, const char *l2att
     xpathCtx = xmlXPathNewContext (xDoc);
 
     // check that the root node exists - create if not
-    xpathObj = xmlXPathEvalExpression (XC ("/*[local-name()='openbox_config']"), xpathCtx);
+    xpathObj = xmlXPathEvalExpression (XC (LN ("openbox_config")), xpathCtx);
     if (xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
     {
         cur_node = xmlNewNode (NULL, XC ("openbox_config"));
@@ -98,7 +99,7 @@ static void set_xml_value (const char *lvl1, const char *lvl2, const char *l2att
     xmlXPathFreeObject (xpathObj);
 
     // check that the top level node (keyboard / mouse / libinput) exists - create if not
-    cptr = g_strdup_printf (".//*[local-name()='%s']", lvl1);
+    cptr = g_strdup_printf ("./" LN ("%s"), lvl1);
     xpathObj = xmlXPathNodeEval (cur_node, XC (cptr), xpathCtx);
     if (xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
         cur_node = xmlNewChild (cur_node, NULL, XC (lvl1), NULL);
@@ -110,7 +111,7 @@ static void set_xml_value (const char *lvl1, const char *lvl2, const char *l2att
     // if a second level is required (libinput), check it exists and create if not
     if (lvl2)
     {
-        cptr = g_strdup_printf (".//*[local-name()='%s']", lvl2);
+        cptr = g_strdup_printf ("./" LN ("%s"), lvl2);
         xpathObj = xmlXPathNodeEval (cur_node, XC (cptr), xpathCtx);
         if (xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
         {
@@ -124,7 +125,7 @@ static void set_xml_value (const char *lvl1, const char *lvl2, const char *l2att
     }
 
     // add or edit the desired element at the current node
-    cptr = g_strdup_printf (".//*[local-name()='%s']", name);
+    cptr = g_strdup_printf ("./" LN ("%s"), name);
     xpathObj = xmlXPathNodeEval (cur_node, XC (cptr), xpathCtx);
     if (xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
         cur_node = xmlNewChild (cur_node, NULL, XC (name), XC (val));
@@ -190,7 +191,7 @@ static void load_config (void)
 
     xmlXPathContextPtr xpathCtx = xmlXPathNewContext (xDoc);
 
-    xpathObj = xmlXPathEvalExpression (XC ("/*[local-name()='openbox_config']/*[local-name()='keyboard']/*[local-name()='repeatRate']"), xpathCtx);
+    xpathObj = xmlXPathEvalExpression (XC (LN ("openbox_config") LN ("keyboard") LN ("repeatRate")), xpathCtx);
     if (xpathObj)
     {
         if (xpathObj->nodesetval)
@@ -201,7 +202,7 @@ static void load_config (void)
         xmlXPathFreeObject (xpathObj);
     }
 
-    xpathObj = xmlXPathEvalExpression (XC ("/*[local-name()='openbox_config']/*[local-name()='keyboard']/*[local-name()='repeatDelay']"), xpathCtx);
+    xpathObj = xmlXPathEvalExpression (XC (LN ("openbox_config") LN ("keyboard") LN ("repeatDelay")), xpathCtx);
     if (xpathObj)
     {
         if (xpathObj->nodesetval)
@@ -212,7 +213,7 @@ static void load_config (void)
         xmlXPathFreeObject (xpathObj);
     }
 
-    xpathObj = xmlXPathEvalExpression (XC ("/*[local-name()='openbox_config']/*[local-name()='libinput']/*[local-name()='device'][@category=\"default\"]/*[local-name()='pointerSpeed']"), xpathCtx);
+    xpathObj = xmlXPathEvalExpression (XC (LN ("openbox_config") LN ("libinput") LN ("device") "[@category='default']" LN("pointerSpeed")), xpathCtx);
     if (xpathObj)
     {
         if (xpathObj->nodesetval)
@@ -223,7 +224,7 @@ static void load_config (void)
         xmlXPathFreeObject (xpathObj);
     }
 
-    xpathObj = xmlXPathEvalExpression (XC ("/*[local-name()='openbox_config']/*[local-name()='libinput']/*[local-name()='device'][@category=\"default\"]/*[local-name()='leftHanded']"), xpathCtx);
+    xpathObj = xmlXPathEvalExpression (XC (LN ("openbox_config") LN ("libinput") LN ("device") "[@category='default']" LN("leftHanded")), xpathCtx);
     if (xpathObj)
     {
         if (xpathObj->nodesetval)
