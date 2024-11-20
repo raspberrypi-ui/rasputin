@@ -213,7 +213,7 @@ static void load_config (void)
         xmlXPathFreeObject (xpathObj);
     }
 
-    xpathObj = xmlXPathEvalExpression (XC (LN ("openbox_config") LN ("libinput") LN ("device") "[@category='default']" LN("pointerSpeed")), xpathCtx);
+    xpathObj = xmlXPathEvalExpression (XC (LN ("openbox_config") LN ("libinput") LN ("device") LN("pointerSpeed")), xpathCtx);
     if (xpathObj)
     {
         if (xpathObj->nodesetval)
@@ -224,7 +224,7 @@ static void load_config (void)
         xmlXPathFreeObject (xpathObj);
     }
 
-    xpathObj = xmlXPathEvalExpression (XC (LN ("openbox_config") LN ("libinput") LN ("device") "[@category='default']" LN("leftHanded")), xpathCtx);
+    xpathObj = xmlXPathEvalExpression (XC (LN ("openbox_config") LN ("libinput") LN ("device") LN("leftHanded")), xpathCtx);
     if (xpathObj)
     {
         if (xpathObj->nodesetval)
