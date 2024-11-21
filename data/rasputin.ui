@@ -343,7 +343,6 @@
                   <object class="GtkGrid" id="kbd_table">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="tooltip-text" translatable="yes">Delay before each key starts repeating</property>
                     <property name="row-spacing">6</property>
                     <property name="column-spacing">6</property>
                     <child>
@@ -363,6 +362,7 @@
                         <property name="width-request">200</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
+                        <property name="tooltip-text" translatable="yes">Delay before each key starts repeating</property>
                         <property name="hexpand">True</property>
                         <property name="adjustment">kb_delay_adj</property>
                         <property name="digits">0</property>
