@@ -54,11 +54,12 @@
             <property name="layout-style">end</property>
             <child>
               <object class="GtkButton" id="cancel">
-                <property name="label" translatable="yes">Cancel</property>
+                <property name="label" translatable="yes">_Cancel</property>
                 <property name="use-action-appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
+                <property name="use-underline">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -68,11 +69,12 @@
             </child>
             <child>
               <object class="GtkButton" id="ok">
-                <property name="label" translatable="yes">OK</property>
+                <property name="label" translatable="yes">_OK</property>
                 <property name="use-action-appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
+                <property name="use-underline">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -503,12 +505,13 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="keyboard_layout">
-                        <property name="label" translatable="yes">Set Layout...</property>
+                        <property name="label" translatable="yes">Set _Layout...</property>
                         <property name="use-action-appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
                         <property name="halign">end</property>
+                        <property name="use-underline">True</property>
                         <property name="image-position">right</property>
                       </object>
                       <packing>
