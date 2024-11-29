@@ -7,6 +7,8 @@ Standards-Version: 4.5.1
 Homepage: http://raspberrypi.com/
 
 Package: rasputin
+Replaces: lxinput
+Breaks: lxinput
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libgtk-3-0 (>= 3.24), libxml2
 Description: Mouse and keyboard configuration tool for Raspberry Pi Desktop
