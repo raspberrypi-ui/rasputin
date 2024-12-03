@@ -1,7 +1,7 @@
-project ('rasputin','c')
+project ('rpcc_rasputin','c')
 
 share_dir = join_paths(get_option('prefix'), 'share')
-resource_dir = join_paths(share_dir, 'rasputin')
+resource_dir = join_paths(share_dir, 'rpcc')
 ui_dir = join_paths(resource_dir, 'ui')
 desktop_dir = join_paths(share_dir, 'applications')
 

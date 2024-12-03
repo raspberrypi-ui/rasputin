@@ -60,6 +60,8 @@ GtkGesture *gesture;
 GdkPixbuf *black, *white;
 gboolean ind_state;
 
+GtkBuilder *builder;
+
 /*----------------------------------------------------------------------------*/
 /* Function prototypes */
 /*----------------------------------------------------------------------------*/
@@ -162,10 +164,8 @@ static void on_gpress (GtkGestureMultiPress *self, gint n_press, gdouble x, gdou
 /* Main function */
 /*----------------------------------------------------------------------------*/
 
-int main (int argc, char* argv[])
+void init_plugin (void)
 {
-    GtkBuilder *builder;
-
     setlocale (LC_ALL, "");
     bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
     bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
@@ -187,8 +187,6 @@ int main (int argc, char* argv[])
     old_dclick = dclick;
     old_delay = delay;
     old_interval = interval;
-
-    gtk_init (&argc, &argv);
 
     /* create the dialog */
     builder = gtk_builder_new_from_file (PACKAGE_DATA_DIR "/ui/rasputin.ui");
@@ -228,28 +226,29 @@ int main (int argc, char* argv[])
     white = gdk_pixbuf_new (GDK_COLORSPACE_RGB, FALSE, 8, 32, 32);
     gdk_pixbuf_fill (white, 0xffffffff);
     gtk_image_set_from_pixbuf (GTK_IMAGE (dclick_ind), black);
+}
 
-    g_object_unref (builder);
+int plugin_tabs (void)
+{
+    return 2;
+}
 
-    /* run the dialog */
-    if (gtk_dialog_run (GTK_DIALOG (dlg)) != GTK_RESPONSE_OK)
-    {
-        /* revert to initial state on cancel */
-        left_handed = old_left_handed;
-        speed = old_speed;
-        dclick = old_dclick;
-        delay = old_delay;
-        interval = old_interval;
+const char *plugin_name (int tab)
+{
+    if (tab == 0) return "Mouse";
+    else return "Keyboard";
+}
 
-        km_fn.set_speed ();
-        km_fn.set_doubleclick ();
-        km_fn.set_keyboard ();
-        km_fn.set_lefthanded ();
-    }
+GtkWidget *get_plugin (int tab)
+{
+    GtkWidget *window, *plugin;
 
-    gtk_widget_destroy (dlg);
+    window = (GtkWidget *) gtk_builder_get_object (builder, tab ? "kbd_wd" : "mouse_wd");
+    plugin = (GtkWidget *) gtk_builder_get_object (builder, tab ? "kbd_page" : "mouse_page");
 
-    return 0;
+    gtk_container_remove (GTK_CONTAINER (window), plugin);
+
+    return plugin;
 }
 
 /* End of file */
