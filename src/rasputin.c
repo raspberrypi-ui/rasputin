@@ -251,5 +251,13 @@ GtkWidget *get_plugin (int tab)
     return plugin;
 }
 
+void free_plugin (void)
+{
+    if (dctimer) g_source_remove (dctimer);
+    if (matimer) g_source_remove (matimer);
+    if (kbtimer) g_source_remove (kbtimer);
+    g_object_unref (builder);
+}
+
 /* End of file */
 /*============================================================================*/
