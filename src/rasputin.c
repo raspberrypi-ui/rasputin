@@ -243,7 +243,7 @@ GtkWidget *get_tab (int tab)
 {
     GtkWidget *window, *plugin;
 
-    window = (GtkWidget *) gtk_builder_get_object (builder, tab ? "kbd_wd" : "mouse_wd");
+    window = (GtkWidget *) gtk_builder_get_object (builder, "notebook");
     plugin = (GtkWidget *) gtk_builder_get_object (builder, tab ? "kbd_page" : "mouse_page");
 
     gtk_container_remove (GTK_CONTAINER (window), plugin);
