@@ -235,8 +235,8 @@ int plugin_tabs (void)
 
 const char *tab_name (int tab)
 {
-    if (tab == 0) return "Mouse";
-    else return "Keyboard";
+    if (tab == 0) return C_("tab", "Mouse");
+    else return C_("tab", "Keyboard");
 }
 
 GtkWidget *get_tab (int tab)
