@@ -1,5 +1,3 @@
-name = 'rpcc_rasputin'
-
 sources = files (
     'rasputin.c',
     'labwc.c',
@@ -13,9 +11,9 @@ gtk = dependency ('gtk+-3.0')
 xml = dependency ('libxml-2.0')
 deps = [ gtk, xml ]
 
-shared_module(name, sources,
+shared_module(meson.project_name(), sources,
         dependencies: deps,
         install: true,
         install_dir: get_option('libdir') / 'rpcc',
-        c_args : '-DPLUGIN_NAME="' + name + '"'
+        c_args : '-DPLUGIN_NAME="' + meson.project_name() + '"'
 )
