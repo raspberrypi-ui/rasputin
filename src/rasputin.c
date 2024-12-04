@@ -233,13 +233,13 @@ int plugin_tabs (void)
     return 2;
 }
 
-const char *plugin_name (int tab)
+const char *tab_name (int tab)
 {
     if (tab == 0) return "Mouse";
     else return "Keyboard";
 }
 
-GtkWidget *get_plugin (int tab)
+GtkWidget *get_tab (int tab)
 {
     GtkWidget *window, *plugin;
 
