@@ -1,4 +1,10 @@
 install_data('rasputin.ui', install_dir: ui_dir)
 if not meson.project_name().contains('rpcc')
-  install_data('rasputin.desktop', install_dir: desktop_dir)
+  i18n.merge_file(input: 'rasputin.desktop.in',
+      output: 'rasputin.desktop',
+      type: 'desktop',
+      po_dir: '../po',
+      install: true,
+      install_dir: desktop_dir
+    )
 endif
