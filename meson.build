@@ -1,3 +1,6 @@
+# To build standalone, use 'rasputin'
+#project ('rasputin','c')
+# To build plugin, use 'rpcc_rasputin'
 project ('rpcc_rasputin','c')
 
 share_dir = join_paths(get_option('prefix'), 'share')
