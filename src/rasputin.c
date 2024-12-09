@@ -246,6 +246,11 @@ GtkWidget *get_tab (int tab)
     return plugin;
 }
 
+gboolean reboot_needed (void)
+{
+    return FALSE;
+}
+
 void free_plugin (void)
 {
     if (dctimer) g_source_remove (dctimer);
