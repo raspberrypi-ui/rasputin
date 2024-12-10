@@ -10,6 +10,6 @@ Package: rasputin
 Replaces: lxinput
 Breaks: lxinput
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libgtk-3-0 (>= 3.24), libxml2
+Depends: ${shlibs:Depends}, ${misc:Depends}, libgtk-3-0 (>= 3.24), libxml2, xinput
 Description: Mouse and keyboard configuration tool for Raspberry Pi Desktop
  GTK mouse and keyboard configuration tool for labwc and openbox environments.

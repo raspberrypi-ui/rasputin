@@ -1,3 +1,9 @@
+rasputin (0.2) bookworm; urgency=medium
+
+  * Add xinput dependency
+
+ -- Simon Long <simon@raspberrypi.com>  Tue, 10 Dec 2024 13:59:12 +0000
+
 rasputin (0.1) bookworm; urgency=medium
 
   * Initial release.
