@@ -221,6 +221,8 @@ void init_plugin (void)
     white = gdk_pixbuf_new (GDK_COLORSPACE_RGB, FALSE, 8, 32, 32);
     gdk_pixbuf_fill (white, 0xffffffff);
     gtk_image_set_from_pixbuf (GTK_IMAGE (dclick_ind), black);
+
+    gtk_widget_hide (GTK_WIDGET (gtk_builder_get_object (builder, "layout_box")));
 }
 
 int plugin_tabs (void)
