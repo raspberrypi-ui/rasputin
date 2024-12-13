@@ -509,6 +509,7 @@
                   <object class="GtkEntry" id="kbd_entry">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">Type here to test keyboard delay and interval</property>
                     <accessibility>
                       <relation type="labelled-by" target="kbd_prompt"/>
                     </accessibility>
