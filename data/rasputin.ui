@@ -100,14 +100,11 @@
                 <property name="can-focus">False</property>
                 <property name="border-width">10</property>
                 <property name="orientation">vertical</property>
-                <property name="spacing">6</property>
+                <property name="spacing">5</property>
                 <child>
-                  <!-- n-columns=4 n-rows=2 -->
-                  <object class="GtkGrid" id="mouse_table">
+                  <object class="GtkBox" id="speed_box">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="row-spacing">6</property>
-                    <property name="column-spacing">6</property>
                     <child>
                       <object class="GtkLabel" id="lbl_speed">
                         <property name="visible">True</property>
@@ -116,8 +113,9 @@
                         <property name="xalign">0</property>
                       </object>
                       <packing>
-                        <property name="left-attach">0</property>
-                        <property name="top-attach">0</property>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
@@ -127,8 +125,9 @@
                         <property name="label" translatable="yes">Slow</property>
                       </object>
                       <packing>
-                        <property name="left-attach">1</property>
-                        <property name="top-attach">0</property>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                     <child>
@@ -145,8 +144,9 @@
                         </accessibility>
                       </object>
                       <packing>
-                        <property name="left-attach">2</property>
-                        <property name="top-attach">0</property>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">2</property>
                       </packing>
                     </child>
                     <child>
@@ -156,10 +156,22 @@
                         <property name="label" translatable="yes">Fast</property>
                       </object>
                       <packing>
-                        <property name="left-attach">3</property>
-                        <property name="top-attach">0</property>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">3</property>
                       </packing>
                     </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox" id="click_box">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
                     <child>
                       <object class="GtkLabel" id="lbl_dclick">
                         <property name="visible">True</property>
@@ -168,8 +180,9 @@
                         <property name="xalign">0</property>
                       </object>
                       <packing>
-                        <property name="left-attach">0</property>
-                        <property name="top-attach">1</property>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
@@ -179,8 +192,9 @@
                         <property name="label" translatable="yes">Short</property>
                       </object>
                       <packing>
-                        <property name="left-attach">1</property>
-                        <property name="top-attach">1</property>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                     <child>
@@ -198,8 +212,9 @@
                         </accessibility>
                       </object>
                       <packing>
-                        <property name="left-attach">2</property>
-                        <property name="top-attach">1</property>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">2</property>
                       </packing>
                     </child>
                     <child>
@@ -209,15 +224,16 @@
                         <property name="label" translatable="yes">Long</property>
                       </object>
                       <packing>
-                        <property name="left-attach">3</property>
-                        <property name="top-attach">1</property>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">3</property>
                       </packing>
                     </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">0</property>
+                    <property name="position">1</property>
                   </packing>
                 </child>
                 <child>
@@ -274,7 +290,7 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">1</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
                 <child>
@@ -314,7 +330,7 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">2</property>
+                    <property name="position">3</property>
                   </packing>
                 </child>
               </object>
@@ -339,14 +355,11 @@
                 <property name="can-focus">False</property>
                 <property name="border-width">10</property>
                 <property name="orientation">vertical</property>
-                <property name="spacing">6</property>
+                <property name="spacing">5</property>
                 <child>
-                  <!-- n-columns=4 n-rows=2 -->
-                  <object class="GtkGrid" id="kbd_table">
+                  <object class="GtkBox" id="delay_box">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="row-spacing">6</property>
-                    <property name="column-spacing">6</property>
                     <child>
                       <object class="GtkLabel" id="lbl_delay">
                         <property name="visible">True</property>
@@ -355,8 +368,21 @@
                         <property name="xalign">0</property>
                       </object>
                       <packing>
-                        <property name="left-attach">0</property>
-                        <property name="top-attach">0</property>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label31">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Short</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                     <child>
@@ -374,8 +400,57 @@
                         </accessibility>
                       </object>
                       <packing>
-                        <property name="left-attach">2</property>
-                        <property name="top-attach">0</property>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label32">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Long</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox" id="interval_box">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkLabel" id="lbl_interval">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Repeat interval:</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label41">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Short</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                     <child>
@@ -393,8 +468,9 @@
                         </accessibility>
                       </object>
                       <packing>
-                        <property name="left-attach">2</property>
-                        <property name="top-attach">1</property>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">2</property>
                       </packing>
                     </child>
                     <child>
@@ -404,60 +480,16 @@
                         <property name="label" translatable="yes">Long</property>
                       </object>
                       <packing>
-                        <property name="left-attach">3</property>
-                        <property name="top-attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="label41">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Short</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">1</property>
-                        <property name="top-attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="label32">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Long</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">3</property>
-                        <property name="top-attach">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="label31">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Short</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">1</property>
-                        <property name="top-attach">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="lbl_interval">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Repeat interval:</property>
-                        <property name="xalign">0</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">0</property>
-                        <property name="top-attach">1</property>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">3</property>
                       </packing>
                     </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">0</property>
+                    <property name="position">1</property>
                   </packing>
                 </child>
                 <child>
@@ -470,13 +502,14 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">1</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkEntry" id="kbd_entry">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">Type here to test keyboard delay and interval</property>
                     <accessibility>
                       <relation type="labelled-by" target="kbd_prompt"/>
                     </accessibility>
@@ -484,7 +517,7 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">2</property>
+                    <property name="position">3</property>
                   </packing>
                 </child>
                 <child>
@@ -525,7 +558,7 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">False</property>
-                    <property name="position">3</property>
+                    <property name="position">4</property>
                   </packing>
                 </child>
               </object>
@@ -559,6 +592,29 @@
       <action-widget response="-6">cancel</action-widget>
       <action-widget response="-5">ok</action-widget>
     </action-widgets>
+  </object>
+  <object class="GtkSizeGroup">
+    <property name="mode">vertical</property>
+    <widgets>
+      <widget name="speed_box"/>
+      <widget name="click_box"/>
+      <widget name="left_box"/>
+      <widget name="delay_box"/>
+      <widget name="interval_box"/>
+      <widget name="layout_box"/>
+    </widgets>
+  </object>
+  <object class="GtkSizeGroup">
+    <widgets>
+      <widget name="label11"/>
+      <widget name="label12"/>
+      <widget name="label21"/>
+      <widget name="label22"/>
+      <widget name="label31"/>
+      <widget name="label32"/>
+      <widget name="label41"/>
+      <widget name="label42"/>
+    </widgets>
   </object>
   <object class="GtkSizeGroup">
     <widgets>
