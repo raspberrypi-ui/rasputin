@@ -36,6 +36,10 @@ extern km_functions_t labwc_functions;
 extern km_functions_t openbox_functions;
 extern km_functions_t wayfire_functions;
 
+#ifdef PLUGIN_NAME
+extern void call_plugin_func (char *name);
+#endif
+
 /*----------------------------------------------------------------------------*/
 /* Typedefs and macros */
 /*----------------------------------------------------------------------------*/
@@ -137,7 +141,11 @@ static gboolean on_left_handed_toggle (GtkSwitch *btn, gboolean state, gpointer 
 
 static void on_set_keyboard_ext (GtkButton *btn, gpointer ptr)
 {
+#ifdef PLUGIN_NAME
+    call_plugin_func ("on_set_keyboard");
+#else
     g_spawn_command_line_async ("rc_gui -k", NULL);
+#endif
 }
 
 static gboolean reset_indicator (gpointer ptr)
@@ -221,8 +229,6 @@ void init_plugin (void)
     white = gdk_pixbuf_new (GDK_COLORSPACE_RGB, FALSE, 8, 32, 32);
     gdk_pixbuf_fill (white, 0xffffffff);
     gtk_image_set_from_pixbuf (GTK_IMAGE (dclick_ind), black);
-
-    gtk_widget_hide (GTK_WIDGET (gtk_builder_get_object (builder, "layout_box")));
 }
 
 int plugin_tabs (void)
