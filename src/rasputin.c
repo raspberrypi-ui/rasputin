@@ -82,7 +82,7 @@ static GdkPixbuf *black, *white;
 static gboolean dclick_handler (gpointer data);
 static gboolean speed_handler (gpointer data);
 static gboolean kbd_handler (gpointer data);
-static void create_controls (void);
+static void init_config (void);
 static gboolean on_mouse_dclick_changed (GtkRange *range, GdkEventButton *event, gpointer user_data);
 static gboolean on_mouse_speed_changed (GtkRange *range, GdkEventButton *event, gpointer user_data);
 static gboolean on_kb_range_changed (GtkRange *range, GdkEventButton *event, int *val);
@@ -124,43 +124,6 @@ static gboolean kbd_handler (gpointer data)
 /*----------------------------------------------------------------------------*/
 /* Widget handlers */
 /*----------------------------------------------------------------------------*/
-
-static void create_controls (void)
-{
-    mouse_speed = (GtkWidget *) gtk_builder_get_object (builder, "mouse_speed");
-    gtk_range_set_value (GTK_RANGE (mouse_speed), (speed + 1) * 5.0);
-    g_signal_connect (mouse_speed, "button-release-event", G_CALLBACK (on_mouse_speed_changed), NULL);
-
-    mouse_dclick = (GtkWidget *) gtk_builder_get_object (builder, "mouse_dclick");
-    gtk_range_set_value (GTK_RANGE (mouse_dclick), dclick);
-    g_signal_connect (mouse_dclick, "button-release-event", G_CALLBACK (on_mouse_dclick_changed), NULL);
-
-    mouse_left_handed = (GtkWidget *) gtk_builder_get_object (builder, "left_handed");
-    gtk_switch_set_active (GTK_SWITCH (mouse_left_handed), left_handed);
-    g_signal_connect (mouse_left_handed, "state-set", G_CALLBACK (on_left_handed_toggle), NULL);
-
-    kb_delay = (GtkWidget *) gtk_builder_get_object (builder, "kb_delay");
-    gtk_range_set_value (GTK_RANGE (kb_delay), delay);
-    g_signal_connect (kb_delay, "button-release-event", G_CALLBACK (on_kb_range_changed), &delay);
-
-    kb_interval = (GtkWidget *) gtk_builder_get_object (builder, "kb_interval");
-    gtk_range_set_value (GTK_RANGE (kb_interval), interval);
-    g_signal_connect (kb_interval, "button-release-event", G_CALLBACK (on_kb_range_changed), &interval);
-
-    kb_layout = (GtkWidget *) gtk_builder_get_object (builder, "keyboard_layout");
-    g_signal_connect (kb_layout, "clicked", G_CALLBACK (on_set_keyboard_ext), NULL);
-
-    dclick_btn = (GtkWidget *) gtk_builder_get_object (builder, "dclick");
-    gesture = gtk_gesture_multi_press_new (dclick_btn);
-    g_signal_connect (gesture, "pressed", G_CALLBACK (on_gpress), NULL);
-    dclick_ind = (GtkWidget *) gtk_builder_get_object (builder, "dclick_ind");
-
-    black = gdk_pixbuf_new (GDK_COLORSPACE_RGB, FALSE, 8, 32, 32);
-    gdk_pixbuf_fill (black, 0x707070ff);
-    white = gdk_pixbuf_new (GDK_COLORSPACE_RGB, FALSE, 8, 32, 32);
-    gdk_pixbuf_fill (white, 0xffffffff);
-    gtk_image_set_from_pixbuf (GTK_IMAGE (dclick_ind), black);
-}
 
 static gboolean on_mouse_dclick_changed (GtkRange *range, GdkEventButton *event, gpointer user_data)
 {
@@ -221,6 +184,55 @@ static void on_gpress (GtkGestureMultiPress *self, gint n_press, gdouble x, gdou
 }
 
 /*----------------------------------------------------------------------------*/
+/* Initial configuration                                                      */
+/*----------------------------------------------------------------------------*/
+
+static void init_config (void)
+{
+    /* load the current state */
+    km_fn.load_config ();
+
+    /* zero timer handles */
+    dctimer = 0;
+    matimer = 0;
+    kbtimer = 0;
+
+    mouse_speed = (GtkWidget *) gtk_builder_get_object (builder, "mouse_speed");
+    gtk_range_set_value (GTK_RANGE (mouse_speed), (speed + 1) * 5.0);
+    g_signal_connect (mouse_speed, "button-release-event", G_CALLBACK (on_mouse_speed_changed), NULL);
+
+    mouse_dclick = (GtkWidget *) gtk_builder_get_object (builder, "mouse_dclick");
+    gtk_range_set_value (GTK_RANGE (mouse_dclick), dclick);
+    g_signal_connect (mouse_dclick, "button-release-event", G_CALLBACK (on_mouse_dclick_changed), NULL);
+
+    mouse_left_handed = (GtkWidget *) gtk_builder_get_object (builder, "left_handed");
+    gtk_switch_set_active (GTK_SWITCH (mouse_left_handed), left_handed);
+    g_signal_connect (mouse_left_handed, "state-set", G_CALLBACK (on_left_handed_toggle), NULL);
+
+    kb_delay = (GtkWidget *) gtk_builder_get_object (builder, "kb_delay");
+    gtk_range_set_value (GTK_RANGE (kb_delay), delay);
+    g_signal_connect (kb_delay, "button-release-event", G_CALLBACK (on_kb_range_changed), &delay);
+
+    kb_interval = (GtkWidget *) gtk_builder_get_object (builder, "kb_interval");
+    gtk_range_set_value (GTK_RANGE (kb_interval), interval);
+    g_signal_connect (kb_interval, "button-release-event", G_CALLBACK (on_kb_range_changed), &interval);
+
+    kb_layout = (GtkWidget *) gtk_builder_get_object (builder, "keyboard_layout");
+    g_signal_connect (kb_layout, "clicked", G_CALLBACK (on_set_keyboard_ext), NULL);
+
+    dclick_btn = (GtkWidget *) gtk_builder_get_object (builder, "dclick");
+    gesture = gtk_gesture_multi_press_new (dclick_btn);
+    g_signal_connect (gesture, "pressed", G_CALLBACK (on_gpress), NULL);
+    dclick_ind = (GtkWidget *) gtk_builder_get_object (builder, "dclick_ind");
+
+    black = gdk_pixbuf_new (GDK_COLORSPACE_RGB, FALSE, 8, 32, 32);
+    gdk_pixbuf_fill (black, 0x707070ff);
+    white = gdk_pixbuf_new (GDK_COLORSPACE_RGB, FALSE, 8, 32, 32);
+    gdk_pixbuf_fill (white, 0xffffffff);
+    gtk_image_set_from_pixbuf (GTK_IMAGE (dclick_ind), black);
+}
+
+/*----------------------------------------------------------------------------*/
 /* Plugin interface */
 /*----------------------------------------------------------------------------*/
 
@@ -240,17 +252,9 @@ void init_plugin (void)
     }
     else km_fn = openbox_functions;
 
-    /* load the current state */
-    km_fn.load_config ();
-
-    /* zero timer handles */
-    dctimer = 0;
-    matimer = 0;
-    kbtimer = 0;
-
     builder = gtk_builder_new_from_file (PACKAGE_DATA_DIR "/ui/rasputin.ui");
 
-    create_controls ();
+    init_config ();
 }
 
 int plugin_tabs (void)
@@ -344,24 +348,8 @@ int main (int argc, char* argv[])
     }
     else km_fn = openbox_functions;
 
-    /* load the current state */
-    km_fn.load_config ();
-
-    /* zero timer handles */
-    dctimer = 0;
-    matimer = 0;
-    kbtimer = 0;
-
-    /* backup the existing state */
-    old_left_handed = left_handed;
-    old_speed = speed;
-    old_dclick = dclick;
-    old_delay = delay;
-    old_interval = interval;
-
     gtk_init (&argc, &argv);
 
-    /* create the dialog */
     builder = gtk_builder_new_from_file (PACKAGE_DATA_DIR "/ui/rasputin.ui");
 
     dlg = (GtkWidget *) gtk_builder_get_object (builder, "dlg");
@@ -372,7 +360,14 @@ int main (int argc, char* argv[])
     wid = (GtkWidget *) gtk_builder_get_object (builder, "button_cancel");
     g_signal_connect (wid, "clicked", G_CALLBACK (cancel_main), NULL);
 
-    create_controls ();
+    init_config ();
+
+    /* backup the existing state */
+    old_left_handed = left_handed;
+    old_speed = speed;
+    old_dclick = dclick;
+    old_delay = delay;
+    old_interval = interval;
 
     g_object_unref (builder);
 
