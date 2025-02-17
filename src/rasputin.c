@@ -1,5 +1,5 @@
 /*============================================================================
-Copyright (c) 2024 Raspberry Pi Holdings Ltd.
+Copyright (c) 2024 Raspberry Pi
 Some code based on lxinput from the LXDE project :
 Copyright (c) 2009-2014 PCMan, martyj19, Julien Lavergne, Andri Grytsenko
 All rights reserved.
@@ -377,6 +377,7 @@ int main (int argc, char* argv[])
     g_object_unref (builder);
 
     gtk_widget_show_all (dlg);
+
     gtk_main ();
 
     return 0;
