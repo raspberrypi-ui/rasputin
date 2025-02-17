@@ -270,12 +270,46 @@ void free_plugin (void)
 #else
 
 /*----------------------------------------------------------------------------*/
+/* Main window button handlers                                                */
+/*----------------------------------------------------------------------------*/
+
+static gboolean ok_main (GtkButton *button, gpointer data)
+{
+    gtk_main_quit ();
+    return FALSE;
+}
+
+static gboolean cancel_main (GtkButton *button, gpointer data)
+{
+    /* revert to initial state on cancel */
+    left_handed = old_left_handed;
+    speed = old_speed;
+    dclick = old_dclick;
+    delay = old_delay;
+    interval = old_interval;
+
+    km_fn.set_speed ();
+    km_fn.set_doubleclick ();
+    km_fn.set_keyboard ();
+    km_fn.set_lefthanded ();
+    gtk_main_quit ();
+    return FALSE;
+}
+
+static gboolean close_prog (GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+    gtk_main_quit ();
+    return TRUE;
+}
+
+/*----------------------------------------------------------------------------*/
 /* Main function */
 /*----------------------------------------------------------------------------*/
 
 int main (int argc, char* argv[])
 {
     GtkBuilder *builder;
+    GtkWidget *wid;
 
     setlocale (LC_ALL, "");
     bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
@@ -305,6 +339,12 @@ int main (int argc, char* argv[])
     builder = gtk_builder_new_from_file (PACKAGE_DATA_DIR "/ui/rasputin.ui");
 
     dlg = (GtkWidget *) gtk_builder_get_object (builder, "dlg");
+    g_signal_connect (dlg, "delete_event", G_CALLBACK (close_prog), NULL);
+
+    wid = (GtkWidget *) gtk_builder_get_object (builder, "button_ok");
+    g_signal_connect (wid, "clicked", G_CALLBACK (ok_main), NULL);
+    wid = (GtkWidget *) gtk_builder_get_object (builder, "button_cancel");
+    g_signal_connect (wid, "clicked", G_CALLBACK (cancel_main), NULL);
 
     mouse_speed = (GtkWidget *) gtk_builder_get_object (builder, "mouse_speed");
     gtk_range_set_value (GTK_RANGE (mouse_speed), (speed + 1) * 5.0);
@@ -342,23 +382,8 @@ int main (int argc, char* argv[])
 
     g_object_unref (builder);
 
-    /* run the dialog */
-    if (gtk_dialog_run (GTK_DIALOG (dlg)) != GTK_RESPONSE_OK)
-    {
-        /* revert to initial state on cancel */
-        left_handed = old_left_handed;
-        speed = old_speed;
-        dclick = old_dclick;
-        delay = old_delay;
-        interval = old_interval;
-
-        km_fn.set_speed ();
-        km_fn.set_doubleclick ();
-        km_fn.set_keyboard ();
-        km_fn.set_lefthanded ();
-    }
-
-    gtk_widget_destroy (dlg);
+    gtk_widget_show_all (dlg);
+    gtk_main ();
 
     return 0;
 }
