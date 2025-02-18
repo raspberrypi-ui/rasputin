@@ -1,7 +1,7 @@
 # To build standalone, use 'rasputin'
-#project ('rasputin','c')
+project ('rasputin','c')
 # To build plugin, use 'rpcc_rasputin'
-project ('rpcc_rasputin','c')
+#project ('rpcc_rasputin','c')
 
 share_dir = join_paths(get_option('prefix'), 'share')
 if meson.project_name().contains('rpcc')
