@@ -268,6 +268,11 @@ const char *tab_name (int tab)
     else return C_("tab", "Keyboard");
 }
 
+const char *tab_id (int tab)
+{
+    return NULL;
+}
+
 GtkWidget *get_tab (int tab)
 {
     GtkWidget *window, *plugin;
@@ -334,7 +339,7 @@ static gboolean close_prog (GtkWidget *widget, GdkEvent *event, gpointer data)
 
 int main (int argc, char* argv[])
 {
-    GtkWidget *dlg, *wid;
+    GtkWidget *main_dlg, *wid;
 
     setlocale (LC_ALL, "");
     bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
@@ -352,8 +357,8 @@ int main (int argc, char* argv[])
 
     builder = gtk_builder_new_from_file (PACKAGE_DATA_DIR "/ui/rasputin.ui");
 
-    dlg = (GtkWidget *) gtk_builder_get_object (builder, "dlg");
-    g_signal_connect (dlg, "delete_event", G_CALLBACK (close_prog), NULL);
+    main_dlg = (GtkWidget *) gtk_builder_get_object (builder, "dlg");
+    g_signal_connect (main_dlg, "delete_event", G_CALLBACK (close_prog), NULL);
 
     wid = (GtkWidget *) gtk_builder_get_object (builder, "button_ok");
     g_signal_connect (wid, "clicked", G_CALLBACK (ok_main), NULL);
@@ -371,7 +376,7 @@ int main (int argc, char* argv[])
 
     g_object_unref (builder);
 
-    gtk_widget_show_all (dlg);
+    gtk_widget_show_all (main_dlg);
 
     gtk_main ();
 
