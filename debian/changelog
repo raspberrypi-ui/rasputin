@@ -1,3 +1,9 @@
+rasputin (0.3) bookworm; urgency=medium
+
+  * Hybrid version
+
+ -- Simon Long <simon@raspberrypi.com>  Fri, 07 Mar 2025 10:57:51 +0000
+
 rasputin (0.2) bookworm; urgency=medium
 
   * Add xinput dependency
