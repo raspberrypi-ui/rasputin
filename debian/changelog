@@ -1,3 +1,9 @@
+rasputin (0.4) trixie; urgency=medium
+
+  * Build as plugin
+
+ -- Simon Long <simon@raspberrypi.com>  Wed, 28 May 2025 20:14:36 +0100
+
 rasputin (0.3) bookworm; urgency=medium
 
   * Hybrid version
