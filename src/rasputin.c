@@ -268,6 +268,12 @@ const char *tab_name (int tab)
     else return C_("tab", "Keyboard");
 }
 
+const char *icon_name (int tab)
+{
+    if (tab == 0) return "input-mouse";
+    else return "input-keyboard";
+}
+
 const char *tab_id (int tab)
 {
     return NULL;
