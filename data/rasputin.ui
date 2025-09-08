@@ -60,6 +60,7 @@
                   <object class="GtkBox" id="speed_box">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="spacing">5</property>
                     <child>
                       <object class="GtkLabel" id="lbl_speed">
                         <property name="visible">True</property>
@@ -127,6 +128,7 @@
                   <object class="GtkBox" id="click_box">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="spacing">5</property>
                     <child>
                       <object class="GtkLabel" id="lbl_dclick">
                         <property name="visible">True</property>
@@ -195,6 +197,7 @@
                   <object class="GtkBox" id="dclick_box">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="spacing">5</property>
                     <child>
                       <object class="GtkLabel" id="dclick_prompt">
                         <property name="visible">True</property>
@@ -253,6 +256,7 @@
                     <property name="name">lh_box</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="spacing">5</property>
                     <child>
                       <object class="GtkLabel" id="lbl_left">
                         <property name="visible">True</property>
@@ -315,6 +319,7 @@
                   <object class="GtkBox" id="delay_box">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="spacing">5</property>
                     <child>
                       <object class="GtkLabel" id="lbl_delay">
                         <property name="visible">True</property>
@@ -383,6 +388,7 @@
                   <object class="GtkBox" id="interval_box">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="spacing">5</property>
                     <child>
                       <object class="GtkLabel" id="lbl_interval">
                         <property name="visible">True</property>
@@ -464,7 +470,7 @@
                   <object class="GtkEntry" id="kbd_entry">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                        <property name="tooltip-text" translatable="yes">Type here to test keyboard delay and interval</property>
+                    <property name="tooltip-text" translatable="yes">Type here to test keyboard delay and interval</property>
                     <accessibility>
                       <relation type="labelled-by" target="kbd_prompt"/>
                     </accessibility>
@@ -479,6 +485,7 @@
                   <object class="GtkBox" id="layout_box">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="spacing">5</property>
                     <child>
                       <object class="GtkLabel">
                         <property name="visible">True</property>
