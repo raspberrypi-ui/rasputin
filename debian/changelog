@@ -1,3 +1,9 @@
+rasputin (1.2) trixie; urgency=medium
+
+  * Add spacing
+
+ -- Simon Long <simon@raspberrypi.com>  Mon, 08 Sep 2025 09:47:31 +0100
+
 rasputin (1.1) trixie; urgency=medium
 
   * Fix dependencies
