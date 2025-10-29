@@ -1,3 +1,9 @@
+rasputin (1.4) trixie; urgency=medium
+
+  * Add window handle to init function
+
+ -- Simon Long <simon@raspberrypi.com>  Wed, 29 Oct 2025 07:06:06 +0000
+
 rasputin (1.3) trixie; urgency=medium
 
   * Update Japanese translation
