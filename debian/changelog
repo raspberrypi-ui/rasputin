@@ -1,3 +1,9 @@
+rasputin (1.5) trixie; urgency=medium
+
+  * Use notify::active instead of state-set
+
+ -- Simon Long <simon@raspberrypi.com>  Mon, 17 Nov 2025 13:21:21 +0000
+
 rasputin (1.4) trixie; urgency=medium
 
   * Add window handle to init function
