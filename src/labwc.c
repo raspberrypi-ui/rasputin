@@ -42,7 +42,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DEFAULT_MOUSE_DCLICK 400
 
 #define XC(str) ((xmlChar *) str)
-#define LN(str) "/*[local-name()='"str"']"
 
 /*----------------------------------------------------------------------------*/
 /* Global data */
@@ -84,35 +83,37 @@ static void set_xml_value (const char *lvl1, const char *lvl2, const char *name,
     }
     else xDoc = xmlNewDoc (XC ("1.0"));
     xpathCtx = xmlXPathNewContext (xDoc);
+    xmlXPathRegisterNs (xpathCtx, XC ("o"), XC ("http://openbox.org/3.4/rc"));
 
     // check that the root node exists - create if not
-    xpathObj = xmlXPathEvalExpression (XC (LN ("openbox_config")), xpathCtx);
+    xpathObj = xmlXPathEvalExpression (XC ("/o:openbox_config"), xpathCtx);
     if (xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
     {
         cur_node = xmlNewNode (NULL, XC ("openbox_config"));
-        xmlDocSetRootElement (xDoc, cur_node);
         xmlNewNs (cur_node, XC ("http://openbox.org/3.4/rc"), NULL);
-        xmlXPathRegisterNs (xpathCtx, XC ("openbox_config"), XC ("http://openbox.org/3.4/rc"));
+        xmlDocSetRootElement (xDoc, cur_node);
     }
-    else
-        cur_node = xpathObj->nodesetval->nodeTab[0];
+    else cur_node = xpathObj->nodesetval->nodeTab[0];
     xmlXPathFreeObject (xpathObj);
 
     // check that the top level node (keyboard / mouse / libinput) exists - create if not
-    cptr = g_strdup_printf ("./" LN ("%s"), lvl1);
+    cptr = g_strdup_printf ("/o:openbox_config/o:%s", lvl1);
     xpathObj = xmlXPathNodeEval (cur_node, XC (cptr), xpathCtx);
+    g_free (cptr);
+
     if (xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
         cur_node = xmlNewChild (cur_node, NULL, XC (lvl1), NULL);
     else
         cur_node = xpathObj->nodesetval->nodeTab[0];
     xmlXPathFreeObject (xpathObj);
-    g_free (cptr);
 
     // if a second level is required (libinput device), check it exists - create if not
     if (lvl2)
     {
-        cptr = g_strdup_printf ("./" LN ("%s"), lvl2);
+        cptr = g_strdup_printf ("/o:openbox_config/o:%s/o:%s", lvl1, lvl2);
         xpathObj = xmlXPathNodeEval (cur_node, XC (cptr), xpathCtx);
+        g_free (cptr);
+
         if (xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
         {
             cur_node = xmlNewChild (cur_node, NULL, XC (lvl2), NULL);
@@ -122,25 +123,22 @@ static void set_xml_value (const char *lvl1, const char *lvl2, const char *name,
         else
             cur_node = xpathObj->nodesetval->nodeTab[0];
         xmlXPathFreeObject (xpathObj);
-        g_free (cptr);
     }
 
     // add or edit the desired element at the current node
-    cptr = g_strdup_printf ("./" LN ("%s"), name);
+    cptr = g_strdup_printf ("./o:%s", name);
     xpathObj = xmlXPathNodeEval (cur_node, XC (cptr), xpathCtx);
-    if (xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
-        cur_node = xmlNewChild (cur_node, NULL, XC (name), XC (val));
-    else
-    {
-        cur_node = xpathObj->nodesetval->nodeTab[0];
-        xmlNodeSetContent (cur_node, XC (val));
-    }
-    xmlXPathFreeObject (xpathObj);
     g_free (cptr);
+
+    if (xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
+        xmlNewChild (cur_node, NULL, XC (name), XC (val));
+    else
+        xmlNodeSetContent (xpathObj->nodesetval->nodeTab[0], XC (val));
+    xmlXPathFreeObject (xpathObj);
 
     // cleanup XML
     xmlXPathFreeContext (xpathCtx);
-    xmlSaveFile (user_config_file, xDoc);
+    xmlSaveFormatFile (user_config_file, xDoc, 1);
     xmlFreeDoc (xDoc);
     xmlCleanupParser ();
 
@@ -157,8 +155,10 @@ static void load_config (void)
     char *dir = g_path_get_dirname (user_config_file);
     int val;
     float fval;
+    xmlDocPtr xDoc;
     xmlXPathObjectPtr xpathObj;
-    xmlNode *node;
+    xmlXPathContextPtr xpathCtx;
+    xmlChar *cont;
 
     mouse_settings = g_settings_new ("org.gnome.desktop.peripherals.mouse");
     dclick = g_settings_get_int (mouse_settings, "double-click");
@@ -183,59 +183,54 @@ static void load_config (void)
     // read in data from XML file
     xmlInitParser ();
     LIBXML_TEST_VERSION
-    xmlDocPtr xDoc = xmlParseFile (user_config_file);
+    xDoc = xmlParseFile (user_config_file);
     if (xDoc == NULL)
     {
+        xmlCleanupParser ();
         g_free (user_config_file);
         return;
     }
 
-    xmlXPathContextPtr xpathCtx = xmlXPathNewContext (xDoc);
+    xpathCtx = xmlXPathNewContext (xDoc);
+    xmlXPathRegisterNs (xpathCtx, XC ("o"), XC ("http://openbox.org/3.4/rc"));
 
-    xpathObj = xmlXPathEvalExpression (XC (LN ("openbox_config") LN ("keyboard") LN ("repeatRate")), xpathCtx);
-    if (xpathObj)
+    xpathObj = xmlXPathEvalExpression (XC ("/o:openbox_config/o:keyboard/o:repeatRate"), xpathCtx);
+    if (!xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
     {
-        if (xpathObj->nodesetval)
-        {
-            node = xpathObj->nodesetval->nodeTab[0];
-            if (node && sscanf ((const char *) xmlNodeGetContent (node), "%d", &val) == 1 && val > 0) interval = 1000 / val;
-        }
-        xmlXPathFreeObject (xpathObj);
+        cont = xmlNodeGetContent (xpathObj->nodesetval->nodeTab[0]);
+        if (sscanf ((const char *) cont, "%d", &val) == 1 && val > 0) interval = 1000 / val;
+        xmlFree (cont);
     }
+    xmlXPathFreeObject (xpathObj);
 
-    xpathObj = xmlXPathEvalExpression (XC (LN ("openbox_config") LN ("keyboard") LN ("repeatDelay")), xpathCtx);
-    if (xpathObj)
+    xpathObj = xmlXPathEvalExpression (XC ("/o:openbox_config/o:keyboard/o:repeatDelay"), xpathCtx);
+    if (!xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
     {
-        if (xpathObj->nodesetval)
-        {
-            node = xpathObj->nodesetval->nodeTab[0];
-            if (node && sscanf ((const char *) xmlNodeGetContent (node), "%d", &val) == 1 && val > 0) delay = val;
-        }
-        xmlXPathFreeObject (xpathObj);
+        cont = xmlNodeGetContent (xpathObj->nodesetval->nodeTab[0]);
+        if (sscanf ((const char *) cont, "%d", &val) == 1 && val > 0) delay = val;
+        xmlFree (cont);
     }
+    xmlXPathFreeObject (xpathObj);
 
-    xpathObj = xmlXPathEvalExpression (XC (LN ("openbox_config") LN ("libinput") LN ("device") LN("pointerSpeed")), xpathCtx);
-    if (xpathObj)
+    xpathObj = xmlXPathEvalExpression (XC ("/o:openbox_config/o:libinput/o:device/o:pointerSpeed"), xpathCtx);
+    if (!xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
     {
-        if (xpathObj->nodesetval)
-        {
-            node = xpathObj->nodesetval->nodeTab[0];
-            if (node && sscanf ((const char *) xmlNodeGetContent (node), "%f", &fval) == 1) speed = fval;
-        }
-        xmlXPathFreeObject (xpathObj);
+        cont = xmlNodeGetContent (xpathObj->nodesetval->nodeTab[0]);
+        if (sscanf ((const char *) cont, "%f", &fval) == 1) speed = fval;
+        xmlFree (cont);
     }
+    xmlXPathFreeObject (xpathObj);
 
-    xpathObj = xmlXPathEvalExpression (XC (LN ("openbox_config") LN ("libinput") LN ("device") LN("leftHanded")), xpathCtx);
-    if (xpathObj)
+    xpathObj = xmlXPathEvalExpression (XC ("/o:openbox_config/o:libinput/o:device/o:leftHanded"), xpathCtx);
+    if (!xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
     {
-        if (xpathObj->nodesetval)
-        {
-            node = xpathObj->nodesetval->nodeTab[0];
-            if (node && xmlNodeGetContent (node) && !strcmp ((const char *) xmlNodeGetContent (node), "yes")) left_handed = TRUE;
-        }
-        xmlXPathFreeObject (xpathObj);
+        cont = xmlNodeGetContent (xpathObj->nodesetval->nodeTab[0]);
+        if (!strcmp ((const char *) cont, "yes")) left_handed = TRUE;
+        xmlFree (cont);
     }
+    xmlXPathFreeObject (xpathObj);
 
+    // cleanup XML
     xmlXPathFreeContext (xpathCtx);
     xmlFreeDoc (xDoc);
     xmlCleanupParser ();
