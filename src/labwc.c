@@ -78,7 +78,7 @@ static void set_xml_value (const char *lvl1, const char *lvl2, const char *name,
     LIBXML_TEST_VERSION
     if (g_file_test (user_config_file, G_FILE_TEST_IS_REGULAR))
     {
-        xDoc = xmlParseFile (user_config_file);
+        xDoc = xmlReadFile (user_config_file, NULL, 0);
         if (!xDoc) xDoc = xmlNewDoc (XC ("1.0"));
     }
     else xDoc = xmlNewDoc (XC ("1.0"));
@@ -183,7 +183,7 @@ static void load_config (void)
     // read in data from XML file
     xmlInitParser ();
     LIBXML_TEST_VERSION
-    xDoc = xmlParseFile (user_config_file);
+    xDoc = xmlReadFile (user_config_file, NULL, 0);
     if (xDoc == NULL)
     {
         xmlCleanupParser ();
