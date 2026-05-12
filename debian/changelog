@@ -1,3 +1,9 @@
+rasputin (1.7) trixie; urgency=medium
+
+  * Ticy libxml code
+
+ -- Simon Long <simon@raspberrypi.com>  Tue, 12 May 2026 09:04:34 +0100
+
 rasputin (1.6) trixie; urgency=medium
 
   * Fix formatting of switch
