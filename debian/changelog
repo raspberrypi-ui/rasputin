@@ -1,6 +1,6 @@
 rasputin (1.7) trixie; urgency=medium
 
-  * Ticy libxml code
+  * Tidy libxml code; add Polish translation
 
  -- Simon Long <simon@raspberrypi.com>  Tue, 12 May 2026 09:04:34 +0100
 
