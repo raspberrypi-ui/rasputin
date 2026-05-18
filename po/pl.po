@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lxinput\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-09-15 20:06+0300\n"
-"PO-Revision-Date: 2014-12-05 08:27+0000\n"
-"Last-Translator: Piotr Strębski <strebski@o2.pl>\n"
+"POT-Creation-Date: 2026-04-13 20:06+0200\n"
+"PO-Revision-Date: 2026-04-13 20:29+0200\n"
+"Last-Translator: Skotniczny <skotniczny@outlook.com>\n"
 "Language-Team: Polish <>\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
@@ -18,111 +18,157 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
-"X-Generator: Pootle 2.7\n"
-"X-POOTLE-MTIME: 1417768022.000000\n"
 
-#: ../src/lxinput.c:351
-msgid "LXInput autostart"
-msgstr "Automatyczne uruchamianie LXInput"
-
-#: ../src/lxinput.c:352
-msgid "Setup keyboard and mouse using settings done in LXInput"
-msgstr "Ustaw klawiaturę i mysz używając ustawień dokonanych w LXInput"
-
-#: ../data/lxinput.ui.h:1
-msgid "Input Device Preferences"
-msgstr "Preferencje urządzeń wejściowych"
-
-#: ../data/lxinput.ui.h:2
-msgid "Sensitivity:"
-msgstr "Czułość:"
-
-#: ../data/lxinput.ui.h:3
-msgid "High"
-msgstr "Wysoka"
-
-#: ../data/lxinput.ui.h:4
-msgid "Low"
-msgstr "Niska"
-
-#: ../data/lxinput.ui.h:5
-msgid "Fast"
-msgstr "Duże"
-
-#: ../data/lxinput.ui.h:6
-msgid "Slow"
-msgstr "Małe"
-
-#: ../data/lxinput.ui.h:7
-msgid "Acceleration:"
-msgstr "Przyspieszenie:"
-
-#: ../data/lxinput.ui.h:8
-msgid "<b>Motion</b>"
-msgstr "<b>Ruch</b>"
-
-#: ../data/lxinput.ui.h:9
-msgid "Left handed (Swap left and right mouse buttons)"
-msgstr "Zamienienie funkcji prawego i lewego przycisku myszy"
-
-#: ../data/lxinput.ui.h:10
+#: ../src/rasputin.c:266
+msgctxt "tab"
 msgid "Mouse"
 msgstr "Mysz"
 
-#: ../data/lxinput.ui.h:11
-msgid "Delay before each key starts repeating"
-msgstr "Określa czas opóźnienia przed rozpoczęciem powtarzania danego znaku"
+#: ../src/rasputin.c:267
+msgctxt "tab"
+msgid "Keyboard"
+msgstr "Klawiatura"
 
-#: ../data/lxinput.ui.h:12
+#. End of file
+#. ============================================================================
+#: ../data/rasputin.ui.h:1
+msgid "Mouse and Keyboard Settings"
+msgstr "Ustawienia myszy i klawiatury"
+
+#: ../data/rasputin.ui.h:2
+msgid "Acceleration:"
+msgstr "Przyspieszenie:"
+
+#: ../data/rasputin.ui.h:3
+msgid "Slow"
+msgstr "Małe"
+
+#: ../data/rasputin.ui.h:4
+msgid "Set the motion speed of the mouse"
+msgstr "Ustaw prędkość ruchu myszy"
+
+#: ../data/rasputin.ui.h:5
+msgid "Fast"
+msgstr "Duże"
+
+#: ../data/rasputin.ui.h:6
+msgid "Delay:"
+msgstr "Opóźnienie:"
+
+#: ../data/rasputin.ui.h:7
+msgid "Short"
+msgstr "Krótkie"
+
+#: ../data/rasputin.ui.h:8
+msgid "Set the maximum delay between clicks to generate a double-click"
+msgstr "Ustaw maksymalne opóźnienie między kliknięciami dla podwójnego kliknięcia"
+
+#: ../data/rasputin.ui.h:9
+msgid "Long"
+msgstr "Długie"
+
+#: ../data/rasputin.ui.h:10
+msgid "Click the square to test double-click speed"
+msgstr "Kliknij kwadrat, aby przetestować szybkość podwójnego kliknięcia"
+
+#: ../data/rasputin.ui.h:11
+msgid "Square flashes white when double-clicked"
+msgstr "Kwadrat miga na biało po podwójnym kliknięciu"
+
+#: ../data/rasputin.ui.h:12
+msgid "Left-handed:"
+msgstr "Leworęczność:"
+
+#: ../data/rasputin.ui.h:13
+msgid "Swap left and right mouse buttons"
+msgstr "Zamień lewy i prawy przycisk myszy"
+
+#: ../data/rasputin.ui.h:14
+msgid "Mouse"
+msgstr "Mysz"
+
+#: ../data/rasputin.ui.h:15
 msgid "Repeat delay:"
 msgstr "Czas opóźnienia przed powtórzeniem:"
 
-#: ../data/lxinput.ui.h:13
-msgid "Interval between each key repeat"
-msgstr "Określa czas przerwy pomiędzy kolejnymi powtórzeniami znaku"
+#: ../data/rasputin.ui.h:16
+msgid "Delay before each key starts repeating"
+msgstr "Określa czas opóźnienia przed rozpoczęciem powtarzania danego znaku"
 
-#: ../data/lxinput.ui.h:14
-msgid "Long"
-msgstr "Długi"
-
-#: ../data/lxinput.ui.h:15
-msgid "Short"
-msgstr "Krótki"
-
-#: ../data/lxinput.ui.h:16
+#: ../data/rasputin.ui.h:17
 msgid "Repeat interval:"
 msgstr "Czas pomiędzy powtórzeniami:"
 
-#: ../data/lxinput.ui.h:17
+#: ../data/rasputin.ui.h:18
+msgid "Interval between each key repeat"
+msgstr "Określa czas przerwy pomiędzy kolejnymi powtórzeniami znaku"
+
+#: ../data/rasputin.ui.h:19
 msgid "Type in the following box to test your keyboard settings"
 msgstr ""
 "Proszę wprowadzić tekst w poniższe pole, aby przetestować ustawienia "
 "klawiatury:"
 
-#: ../data/lxinput.ui.h:18
-msgid "<b>Character Repeat</b>"
-msgstr "<b>Powtarzanie znaków</b>"
+#: ../data/rasputin.ui.h:20
+msgid "Type here to test keyboard delay and interval"
+msgstr "Proszę wprowadzić tekst, aby przetestować opóźnienie i interwał klawiatury"
 
-#: ../data/lxinput.ui.h:19
-msgid "Beep when there is an error of keyboard input"
-msgstr "Ostrzeganie sygnałem dźwiękowym w przypadku błędu wejścia klawiatury"
+#: ../data/rasputin.ui.h:21
+msgid "Layout:"
+msgstr "Układ:"
 
-#: ../data/lxinput.ui.h:20
-msgid "<b>Keyboard layout</b>"
-msgstr "<b>Układ klawiatury</b>"
+#: ../data/rasputin.ui.h:22
+msgid "Set _Layout..."
+msgstr "Ustaw _układ…"
 
-#: ../data/lxinput.ui.h:21
+#: ../data/rasputin.ui.h:23
 msgid "Keyboard"
 msgstr "Klawiatura"
 
-#: ../data/lxinput.ui.h:22
-msgid "Touch Pad"
-msgstr "Panel dotykowy"
+#: ../data/rasputin.ui.h:24
+msgid "_Cancel"
+msgstr "_Anuluj"
 
-#: ../data/lxinput.desktop.in.h:1
-msgid "Keyboard and Mouse"
-msgstr "Klawiatura i mysz"
+#: ../data/rasputin.ui.h:25
+msgid "_OK"
+msgstr ""
 
-#: ../data/lxinput.desktop.in.h:2
-msgid "Configure keyboard, mouse, and other input devices"
-msgstr "Konfiguruje klawiaturę, mysz i inne urządzenia wejściowe"
+#~ msgid "LXInput autostart"
+#~ msgstr "Automatyczne uruchamianie LXInput"
+
+#~ msgid "Setup keyboard and mouse using settings done in LXInput"
+#~ msgstr "Ustaw klawiaturę i mysz używając ustawień dokonanych w LXInput"
+
+#~ msgid "Input Device Preferences"
+#~ msgstr "Preferencje urządzeń wejściowych"
+
+#~ msgid "Sensitivity:"
+#~ msgstr "Czułość:"
+
+#~ msgid "High"
+#~ msgstr "Wysoka"
+
+#~ msgid "Low"
+#~ msgstr "Niska"
+
+#~ msgid "<b>Motion</b>"
+#~ msgstr "<b>Ruch</b>"
+
+#~ msgid "<b>Character Repeat</b>"
+#~ msgstr "<b>Powtarzanie znaków</b>"
+
+#~ msgid "Beep when there is an error of keyboard input"
+#~ msgstr ""
+#~ "Ostrzeganie sygnałem dźwiękowym w przypadku błędu wejścia klawiatury"
+
+#~ msgid "<b>Keyboard layout</b>"
+#~ msgstr "<b>Układ klawiatury</b>"
+
+#~ msgid "Touch Pad"
+#~ msgstr "Panel dotykowy"
+
+#~ msgid "Keyboard and Mouse"
+#~ msgstr "Klawiatura i mysz"
+
+#~ msgid "Configure keyboard, mouse, and other input devices"
+#~ msgstr "Konfiguruje klawiaturę, mysz i inne urządzenia wejściowe"
