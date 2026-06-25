@@ -151,7 +151,7 @@ static void set_xml_value (const char *lvl1, const char *lvl2, const char *name,
 
 static void load_config (void)
 {
-    char *user_config_file = g_build_filename (g_get_user_config_dir (), "labwc/rc.xml", NULL);;
+    char *user_config_file = g_build_filename (g_get_user_config_dir (), "labwc/rc.xml", NULL);
     char *dir = g_path_get_dirname (user_config_file);
     int val;
     float fval;
