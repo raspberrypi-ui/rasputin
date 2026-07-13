@@ -254,7 +254,7 @@ static void set_lefthanded (void)
 /* Function table */
 /*----------------------------------------------------------------------------*/
 
-km_functions_t openbox_functions = {
+km_functions_t openbox_ifunctions = {
     .load_config = load_config,
     .set_doubleclick = set_doubleclick,
     .set_speed = set_speed,

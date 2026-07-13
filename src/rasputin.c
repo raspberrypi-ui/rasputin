@@ -32,9 +32,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <glib/gi18n.h>
 #include "rasputin.h"
 
-extern km_functions_t labwc_functions;
-extern km_functions_t openbox_functions;
-extern km_functions_t wayfire_functions;
+extern km_functions_t labwc_ifunctions;
+extern km_functions_t openbox_ifunctions;
+extern km_functions_t wayfire_ifunctions;
 
 #ifdef PLUGIN_NAME
 extern void call_plugin_func (char *name);
@@ -246,10 +246,10 @@ void init_plugin (GtkWidget *)
 
     if (getenv ("WAYLAND_DISPLAY"))
     {
-        if (getenv ("WAYFIRE_CONFIG_FILE")) km_fn = wayfire_functions;
-        else km_fn = labwc_functions;
+        if (getenv ("WAYFIRE_CONFIG_FILE")) km_fn = wayfire_ifunctions;
+        else km_fn = labwc_ifunctions;
     }
-    else km_fn = openbox_functions;
+    else km_fn = openbox_ifunctions;
 
     builder = gtk_builder_new_from_file (PACKAGE_DATA_DIR "/ui/rasputin.ui");
 
@@ -353,10 +353,10 @@ int main (int argc, char* argv[])
 
     if (getenv ("WAYLAND_DISPLAY"))
     {
-        if (getenv ("WAYFIRE_CONFIG_FILE")) km_fn = wayfire_functions;
-        else km_fn = labwc_functions;
+        if (getenv ("WAYFIRE_CONFIG_FILE")) km_fn = wayfire_ifunctions;
+        else km_fn = labwc_ifunctions;
     }
-    else km_fn = openbox_functions;
+    else km_fn = openbox_ifunctions;
 
     gtk_init (&argc, &argv);
 

@@ -191,7 +191,7 @@ static void set_lefthanded (void)
 /* Function table */
 /*----------------------------------------------------------------------------*/
 
-km_functions_t wayfire_functions = {
+km_functions_t wayfire_ifunctions = {
     .load_config = load_config,
     .set_doubleclick = set_doubleclick,
     .set_speed = set_speed,
