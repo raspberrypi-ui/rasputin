@@ -73,6 +73,7 @@ static void set_xml_value (const char *lvl1, const char *lvl2, const char *name,
     xmlNodePtr cur_node;
     xmlXPathObjectPtr xpathObj;
     xmlXPathContextPtr xpathCtx;
+    xmlAttr *attr;
 
     // read in data from XML file
     xmlInitParser ();
@@ -116,14 +117,19 @@ static void set_xml_value (const char *lvl1, const char *lvl2, const char *name,
         g_free (cptr);
 
         if (xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
-        {
             cur_node = xmlNewChild (cur_node, NULL, XC (lvl2), NULL);
-            // libinput device nodes require the category property to be set...
-            xmlSetProp (cur_node, XC ("category"), XC ("default"));
-        }
         else
             cur_node = xpathObj->nodesetval->nodeTab[0];
+
+        // libinput device nodes require the category property to be set...
+        xmlSetProp (cur_node, XC ("category"), XC ("default"));
         xmlXPathFreeObject (xpathObj);
+    }
+
+    // clear any node attributes
+    for (attr = cur_node->properties; attr; attr = attr->next)
+    {
+        if (xmlStrcmp (attr->name, XC ("category"))) xmlUnsetProp (cur_node, attr->name);
     }
 
     // add or edit the desired element at the current node
