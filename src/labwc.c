@@ -55,6 +55,7 @@ static GSettings *mouse_settings;
 
 static void set_xml_value (const char *lvl1, const char *lvl2, const char *name, const char *val);
 static void load_config (void);
+static gboolean is_true (const xmlChar *val);
 static void set_doubleclick (void);
 static void set_speed (void);
 static void set_keyboard (void);
@@ -158,6 +159,7 @@ static void load_config (void)
     xmlDocPtr xDoc;
     xmlXPathObjectPtr xpathObj;
     xmlXPathContextPtr xpathCtx;
+    xmlAttr *attr;
     xmlChar *cont;
 
     mouse_settings = g_settings_new ("org.gnome.desktop.peripherals.mouse");
@@ -212,6 +214,20 @@ static void load_config (void)
     }
     xmlXPathFreeObject (xpathObj);
 
+    xpathObj = xmlXPathEvalExpression (XC ("/o:openbox_config/o:keyboard"), xpathCtx);
+    if (!xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
+    {
+        for (attr = xpathObj->nodesetval->nodeTab[0]->properties; attr; attr = attr->next)
+        {
+            cont = attr->children->content;
+            if (!xmlStrcmp (attr->name, XC ("repeatRate")))
+                if (sscanf ((const char *) cont, "%d", &val) == 1 && val > 0) interval = 1000 / val;
+            if (!xmlStrcmp (attr->name, XC ("repeatDelay")))
+                if (sscanf ((const char *) cont, "%d", &val) == 1 && val > 0) delay = val;
+        }
+    }
+    xmlXPathFreeObject (xpathObj);
+
     xpathObj = xmlXPathEvalExpression (XC ("/o:openbox_config/o:libinput/o:device/o:pointerSpeed"), xpathCtx);
     if (!xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
     {
@@ -225,8 +241,22 @@ static void load_config (void)
     if (!xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
     {
         cont = xmlNodeGetContent (xpathObj->nodesetval->nodeTab[0]);
-        if (!strcmp ((const char *) cont, "yes")) left_handed = TRUE;
+        left_handed = is_true (cont);
         xmlFree (cont);
+    }
+    xmlXPathFreeObject (xpathObj);
+
+    xpathObj = xmlXPathEvalExpression (XC ("/o:openbox_config/o:libinput/o:device"), xpathCtx);
+    if (!xmlXPathNodeSetIsEmpty (xpathObj->nodesetval))
+    {
+        for (attr = xpathObj->nodesetval->nodeTab[0]->properties; attr; attr = attr->next)
+        {
+            cont = attr->children->content;
+            if (!xmlStrcmp (attr->name, XC ("pointerSpeed")))
+                if (sscanf ((const char *) cont, "%f", &fval) == 1) speed = fval;
+            if (!xmlStrcmp (attr->name, XC ("leftHanded")))
+                left_handed = is_true (cont);
+        }
     }
     xmlXPathFreeObject (xpathObj);
 
@@ -236,6 +266,16 @@ static void load_config (void)
     xmlCleanupParser ();
 
     g_free (user_config_file);
+}
+
+static gboolean is_true (const xmlChar *val)
+{
+    if (!xmlStrcmp (val, XC ("yes"))
+        || !xmlStrcmp (val, XC ("true"))
+        || !xmlStrcmp (val, XC ("on"))
+        || !xmlStrcmp (val, XC ("1")))
+        return TRUE;
+    else return FALSE;
 }
 
 static void set_doubleclick (void)
