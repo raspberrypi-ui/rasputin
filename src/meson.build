@@ -1,7 +1,6 @@
 sources = files (
     'rasputin.c',
     'labwc.c',
-    'wayfire.c',
     'openbox.c'
 )
 
