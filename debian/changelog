@@ -1,3 +1,9 @@
+rasputin (1.8) trixie; urgency=medium
+
+  * Remove wayfire support; support alternate labwc XML
+
+ -- Simon Long <simon@raspberrypi.com>  Tue, 14 Jul 2026 08:41:42 +0100
+
 rasputin (1.7) trixie; urgency=medium
 
   * Tidy libxml code; add Polish translation
