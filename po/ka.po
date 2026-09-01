@@ -1,0 +1,136 @@
+# Georgian translation for rpcc_rasputin.
+# Copyright (C) 2026 rpcc_rasputin's authors.
+# This file is distributed under the same license as the rpcc_rasputin package.
+# Ekaterine Papava <papava.e@gtu.ge>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: rpcc_rasputin\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-13 15:52+0200\n"
+"PO-Revision-Date: 2026-08-29 13:46+0200\n"
+"Last-Translator: Ekaterine Papava <papava.e@gtu.ge>\n"
+"Language-Team: Georgian <(nothing)>\n"
+"Language: ka\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.9\n"
+
+#: src/rasputin.c:261
+msgctxt "tab"
+msgid "Mouse"
+msgstr "თაგუნა"
+
+#: src/rasputin.c:262
+msgctxt "tab"
+msgid "Keyboard"
+msgstr "კლავიატურა"
+
+#: data/rasputin.ui:39
+msgid "Mouse and Keyboard Settings"
+msgstr "კლავიატურისა და თაგუნას მორგება"
+
+#: data/rasputin.ui:68
+msgid "Acceleration:"
+msgstr "აჩქარება:"
+
+#: data/rasputin.ui:81
+msgid "Slow"
+msgstr "ნელი"
+
+#: data/rasputin.ui:94
+msgid "Set the motion speed of the mouse"
+msgstr "თაგუნას მოძრაობის სიჩქარის დაყენება"
+
+#: data/rasputin.ui:112
+msgid "Fast"
+msgstr "ჩქარი"
+
+#: data/rasputin.ui:136
+msgid "Delay:"
+msgstr "დაყოვნება:"
+
+#: data/rasputin.ui:149 data/rasputin.ui:353 data/rasputin.ui:422
+msgid "Short"
+msgstr "მოკლე"
+
+#: data/rasputin.ui:162
+msgid "Set the maximum delay between clicks to generate a double-click"
+msgstr "დააყენეთ მაქს. დაყოვნება წკაპებს შორის ორმაგი წკაპის გენერაციისთვის"
+
+#: data/rasputin.ui:181 data/rasputin.ui:385 data/rasputin.ui:454
+msgid "Long"
+msgstr "გრძელი"
+
+#: data/rasputin.ui:205
+msgid "Click the square to test double-click speed"
+msgstr "დააწკაპუნეთ კვადრატზე ორმაგი წკაპის სიჩქარის გამოსაცდელად"
+
+#: data/rasputin.ui:217
+msgid "Square flashes white when double-clicked"
+msgstr "კვადრატი ციმციმებს, როცა ზედ ორჯერ აწკაპუნებენ"
+
+#: data/rasputin.ui:264
+msgid "Left-handed:"
+msgstr "ცაცია:"
+
+#: data/rasputin.ui:282
+msgid "Swap left and right mouse buttons"
+msgstr "თაგუნას მარჯვენა და მარცხენა ღილაკების მიმოცვლა"
+
+#: data/rasputin.ui:317
+msgid "Mouse"
+msgstr "თაგუნა"
+
+#: data/rasputin.ui:340
+msgid "Repeat delay:"
+msgstr "გამეორების დაყოვნება:"
+
+#: data/rasputin.ui:366
+msgid "Delay before each key starts repeating"
+msgstr "დაყოვნება, სანამ თითოეული ღილაკი გამეორებას დაიწყებს"
+
+#: data/rasputin.ui:409
+msgid "Repeat interval:"
+msgstr "გამეორების ინტერვალი:"
+
+#: data/rasputin.ui:435
+msgid "Interval between each key repeat"
+msgstr "ინტერვალი თითოეული ღილაკის გამეორებას შორის"
+
+#: data/rasputin.ui:473
+msgid "Type in the following box to test your keyboard settings"
+msgstr "აკრიფეთ შემდეგ ველში თქვენი კლავიატურის პარამეტრების შესამოწმებლად"
+
+#: data/rasputin.ui:486
+msgid "Type here to test keyboard delay and interval"
+msgstr "აკრიფეთ აქ კლავიატურის დაყოვნებისა და ინტერვალის შესამოწმებლად"
+
+#: data/rasputin.ui:506
+msgid "Layout:"
+msgstr "განლაგება:"
+
+#: data/rasputin.ui:516
+msgid "Set _Layout..."
+msgstr "გან_ლაგების დაყენება..."
+
+#: data/rasputin.ui:549
+msgid "Keyboard"
+msgstr "კლავიატურა"
+
+#: data/rasputin.ui:572
+msgid "_Cancel"
+msgstr "გაუ_ქმება"
+
+#: data/rasputin.ui:586
+msgid "_OK"
+msgstr "_დიახ"
+
+#: data/rasputin.desktop.in:3
+msgid "Keyboard and Mouse"
+msgstr "კლავიატურა და თაგუნა"
+
+#: data/rasputin.desktop.in:4
+msgid "Configure keyboard, mouse, and other input devices"
+msgstr "კლავიატურის, თაგუნას და სხვა შეყვანის მოწყობილობების მორგება"
