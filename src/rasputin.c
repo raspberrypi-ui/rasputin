@@ -35,9 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 extern km_functions_t labwc_ifunctions;
 extern km_functions_t openbox_ifunctions;
 
-#ifdef PLUGIN_NAME
 extern void call_plugin_func (char *name);
-#endif
 
 /*----------------------------------------------------------------------------*/
 /* Typedefs and macros */
@@ -234,8 +232,6 @@ static void init_config (void)
 /* Plugin interface */
 /*----------------------------------------------------------------------------*/
 
-#ifdef PLUGIN_NAME
-
 void init_plugin (GtkWidget *)
 {
     setlocale (LC_ALL, "");
@@ -277,7 +273,7 @@ GtkWidget *get_tab (int tab)
 {
     GtkWidget *window, *plugin;
 
-    window = (GtkWidget *) gtk_builder_get_object (builder, "notebook");
+    window = (GtkWidget *) gtk_builder_get_object (builder, tab ? "keyboard_window" : "mouse_window");
     plugin = (GtkWidget *) gtk_builder_get_object (builder, tab ? "kbd_page" : "mouse_page");
 
     gtk_container_remove (GTK_CONTAINER (window), plugin);
@@ -297,89 +293,6 @@ void free_plugin (void)
     if (kbtimer) g_source_remove (kbtimer);
     g_object_unref (builder);
 }
-
-#else
-
-/*----------------------------------------------------------------------------*/
-/* Main window button handlers                                                */
-/*----------------------------------------------------------------------------*/
-
-static gboolean ok_main (GtkButton *button, gpointer data)
-{
-    gtk_main_quit ();
-    return FALSE;
-}
-
-static gboolean cancel_main (GtkButton *button, gpointer data)
-{
-    /* revert to initial state on cancel */
-    left_handed = old_left_handed;
-    speed = old_speed;
-    dclick = old_dclick;
-    delay = old_delay;
-    interval = old_interval;
-
-    km_fn.set_speed ();
-    km_fn.set_doubleclick ();
-    km_fn.set_keyboard ();
-    km_fn.set_lefthanded ();
-    gtk_main_quit ();
-    return FALSE;
-}
-
-static gboolean close_prog (GtkWidget *widget, GdkEvent *event, gpointer data)
-{
-    gtk_main_quit ();
-    return TRUE;
-}
-
-/*----------------------------------------------------------------------------*/
-/* Main function */
-/*----------------------------------------------------------------------------*/
-
-int main (int argc, char* argv[])
-{
-    GtkWidget *main_dlg, *wid;
-
-    setlocale (LC_ALL, "");
-    bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
-    bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
-    textdomain (GETTEXT_PACKAGE);
-
-    if (getenv ("WAYLAND_DISPLAY")) km_fn = labwc_ifunctions;
-    else km_fn = openbox_ifunctions;
-
-    gtk_init (&argc, &argv);
-
-    builder = gtk_builder_new_from_file (PACKAGE_DATA_DIR "/ui/rasputin.ui");
-
-    main_dlg = (GtkWidget *) gtk_builder_get_object (builder, "dlg");
-    g_signal_connect (main_dlg, "delete_event", G_CALLBACK (close_prog), NULL);
-
-    wid = (GtkWidget *) gtk_builder_get_object (builder, "button_ok");
-    g_signal_connect (wid, "clicked", G_CALLBACK (ok_main), NULL);
-    wid = (GtkWidget *) gtk_builder_get_object (builder, "button_cancel");
-    g_signal_connect (wid, "clicked", G_CALLBACK (cancel_main), NULL);
-
-    init_config ();
-
-    /* backup the existing state */
-    old_left_handed = left_handed;
-    old_speed = speed;
-    old_dclick = dclick;
-    old_delay = delay;
-    old_interval = interval;
-
-    g_object_unref (builder);
-
-    gtk_widget_show_all (main_dlg);
-
-    gtk_main ();
-
-    return 0;
-}
-
-#endif
 
 /* End of file */
 /*============================================================================*/

@@ -1,9 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Keyboard and Mouse
-Comment=Configure keyboard, mouse, and other input devices
-Icon=preferences-desktop-peripherals
-Exec=rasputin
-Terminal=false
-Categories=Settings;
-StartupNotify=true
