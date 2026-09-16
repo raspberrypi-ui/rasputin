@@ -56,13 +56,6 @@ int dclick, delay, interval;
 float speed;
 gboolean left_handed;
 
-#ifndef PLUGIN_NAME
-/* Setting backups */
-static int old_dclick, old_delay, old_interval;
-static float old_speed;
-static gboolean old_left_handed;
-#endif
-
 /* Control timer handles */
 static guint dctimer, matimer, kbtimer;
 
@@ -87,11 +80,6 @@ static void on_left_handed_toggle (GtkSwitch *btn, gpointer, gpointer user_data)
 static void on_set_keyboard_ext (GtkButton *btn, gpointer ptr);
 static gboolean reset_indicator (gpointer ptr);
 static void on_gpress (GtkGestureMultiPress *self, gint n_press, gdouble x, gdouble y, gpointer ptr);
-#ifndef PLUGIN_NAME
-static gboolean ok_main (GtkButton *button, gpointer data);
-static gboolean cancel_main (GtkButton *button, gpointer data);
-static gboolean close_prog (GtkWidget *widget, GdkEvent *event, gpointer data);
-#endif
 
 /*----------------------------------------------------------------------------*/
 /* Timer handlers */
@@ -154,11 +142,7 @@ static void on_left_handed_toggle (GtkSwitch *btn, gpointer, gpointer user_data)
 
 static void on_set_keyboard_ext (GtkButton *btn, gpointer ptr)
 {
-#ifdef PLUGIN_NAME
     call_plugin_func ("on_set_keyboard");
-#else
-    g_spawn_command_line_async ("rc_gui -k", NULL);
-#endif
 }
 
 static gboolean reset_indicator (gpointer ptr)
