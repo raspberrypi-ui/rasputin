@@ -225,6 +225,7 @@ static void load_config (void)
     {
         for (attr = xpathObj->nodesetval->nodeTab[0]->properties; attr; attr = attr->next)
         {
+            if (!attr->children || !attr->children->content) continue;
             cont = attr->children->content;
             if (!xmlStrcmp (attr->name, XC ("repeatRate")))
                 if (sscanf ((const char *) cont, "%d", &val) == 1 && val > 0) interval = 1000 / val;
@@ -257,6 +258,7 @@ static void load_config (void)
     {
         for (attr = xpathObj->nodesetval->nodeTab[0]->properties; attr; attr = attr->next)
         {
+            if (!attr->children || !attr->children->content) continue;
             cont = attr->children->content;
             if (!xmlStrcmp (attr->name, XC ("pointerSpeed")))
                 if (sscanf ((const char *) cont, "%f", &fval) == 1) speed = fval;
